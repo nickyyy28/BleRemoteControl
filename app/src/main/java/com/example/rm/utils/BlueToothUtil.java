@@ -3,15 +3,25 @@ package com.example.rm.utils;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.os.ParcelUuid;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+
+import com.example.rm.R;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,11 +35,31 @@ public class BlueToothUtil {
     private static final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     private static final BlueToothBroadcastReceiver receiver = new BlueToothBroadcastReceiver();
 
+    public static BluetoothManager getBluetoothManager() {
+        return bluetoothManager;
+    }
+
+    public static void setBluetoothManager(BluetoothManager bluetoothManager) {
+        BlueToothUtil.bluetoothManager = bluetoothManager;
+    }
+
+    private static BluetoothManager bluetoothManager;
+
     private static TimerTask timerTask;
     private final static int REQUEST_ENABLE_BT = 1;
 
     private static BluetoothSocket serverSocket;
     private static BluetoothSocket clientSocket;
+
+    public static BluetoothGatt getBluetoothGatt() {
+        return bluetoothGatt;
+    }
+
+    public static void setBluetoothGatt(BluetoothGatt bluetoothGatt) {
+        BlueToothUtil.bluetoothGatt = bluetoothGatt;
+    }
+
+    private static BluetoothGatt bluetoothGatt;
 
     public static void setServerSocket(BluetoothSocket socket){
         serverSocket = socket;
@@ -121,6 +151,10 @@ public class BlueToothUtil {
 
     }
 
+    public static void cancelBlueScan(){
+        adapter.cancelDiscovery();
+    }
+
     public static void setAdapter(ArrayAdapter<String> adapter){
         receiver.setAdapter(adapter);
     }
@@ -157,6 +191,14 @@ public class BlueToothUtil {
 
     public static BluetoothAdapter getAdapter() {
         return adapter;
+    }
+
+    public static void UtilInit(Activity activity){
+        if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+            Toast.makeText(activity, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
+            activity.finish();
+        }
+        bluetoothManager = (BluetoothManager) activity.getSystemService(Context.BLUETOOTH_SERVICE);
     }
 
     public static void bluetoothInit(Activity activity) {
@@ -264,6 +306,7 @@ class ConnectThread extends Thread {
     private BluetoothSocket mmSocket;
     private final Activity activity;
     private final BluetoothAdapter adapter;
+    BluetoothGatt bluetoothGatt;
 
     private final static String TAG = "ConnectThread";
 
@@ -274,6 +317,7 @@ class ConnectThread extends Thread {
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
 
+        /*
         if (device.getUuids() == null) {
             return;
         }
@@ -288,13 +332,85 @@ class ConnectThread extends Thread {
             Log.e(TAG, "Socket's create() method failed", e);
         }
         mmSocket = socket;
+        */
+
+        bluetoothGatt = device.connectGatt(activity, false, new BluetoothGattCallback() {
+            @Override
+            public void onPhyUpdate(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+                super.onPhyUpdate(gatt, txPhy, rxPhy, status);
+            }
+
+            @Override
+            public void onPhyRead(BluetoothGatt gatt, int txPhy, int rxPhy, int status) {
+                super.onPhyRead(gatt, txPhy, rxPhy, status);
+            }
+
+            @Override
+            public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
+                super.onConnectionStateChange(gatt, status, newState);
+            }
+
+            @Override
+            public void onServicesDiscovered(BluetoothGatt gatt, int status) {
+                super.onServicesDiscovered(gatt, status);
+            }
+
+            @Override
+            public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                super.onCharacteristicRead(gatt, characteristic, status);
+            }
+
+            @Override
+            public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                super.onCharacteristicWrite(gatt, characteristic, status);
+            }
+
+            @Override
+            public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+                super.onCharacteristicChanged(gatt, characteristic);
+            }
+
+            @Override
+            public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+                super.onDescriptorRead(gatt, descriptor, status);
+            }
+
+            @Override
+            public void onDescriptorWrite(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status) {
+                super.onDescriptorWrite(gatt, descriptor, status);
+            }
+
+            @Override
+            public void onReliableWriteCompleted(BluetoothGatt gatt, int status) {
+                super.onReliableWriteCompleted(gatt, status);
+            }
+
+            @Override
+            public void onReadRemoteRssi(BluetoothGatt gatt, int rssi, int status) {
+                super.onReadRemoteRssi(gatt, rssi, status);
+            }
+
+            @Override
+            public void onMtuChanged(BluetoothGatt gatt, int mtu, int status) {
+                super.onMtuChanged(gatt, mtu, status);
+            }
+
+            @Override
+            public void onServiceChanged(@NonNull BluetoothGatt gatt) {
+                super.onServiceChanged(gatt);
+            }
+        });
+
+        BlueToothUtil.setBluetoothGatt(bluetoothGatt);
+        BlueToothUtil.cancelBlueScan();
+
     }
 
     public void run() {
         // Cancel discovery because it otherwise slows down the connection.
         adapter.cancelDiscovery();
 
-        try {
+        /*try {
             // Connect to the remote device through the socket. This call blocks
             // until it succeeds or throws an exception.
             mmSocket.connect();
@@ -316,7 +432,14 @@ class ConnectThread extends Thread {
             BlueToothUtil.setClientSocket(mmSocket);
             Intent intent = new Intent("com.example.rm.GAME_ACTION");
             activity.startActivity(intent);
+        }*/
+
+        if (bluetoothGatt.connect()) {
+            Intent intent = new Intent("com.example.rm.GAME_ACTION");
+            activity.startActivity(intent);
         }
+
+//        bluetoothGatt.writeCharacteristic()
     }
 
     // Closes the client socket and causes the thread to finish.

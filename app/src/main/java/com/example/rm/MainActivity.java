@@ -58,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        BlueToothUtil.UtilInit(this);
+
         BlueToothUtil.openBlueTooth(this);
 
         BlueToothUtil.setBlueToothDiscoverable(this);

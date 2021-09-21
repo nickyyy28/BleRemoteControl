@@ -115,11 +115,11 @@ public class GameActivity extends AppCompatActivity {
             final static String TAG = "Timer task";
             OutputStream outputStream = null;
             {
-                try {
-                    outputStream = BlueToothUtil.getOutputStream();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+//                try {
+//                    outputStream = BlueToothUtil.getOutputStream();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
             }
 
             @Override
@@ -139,13 +139,13 @@ public class GameActivity extends AppCompatActivity {
 
                 byte[] arr = GameActivity.this.data.getDataPack();
 
-                try {
-                    outputStream.write(arr);
-                } catch (IOException e) {
-//                    Toast.makeText(GameActivity.this, "发送数据失败", Toast.LENGTH_SHORT).show();
-
-                    e.printStackTrace();
-                }
+//                try {
+//                    outputStream.write(arr);
+//                } catch (IOException e) {
+////                    Toast.makeText(GameActivity.this, "发送数据失败", Toast.LENGTH_SHORT).show();
+//
+//                    e.printStackTrace();
+//                }
                 Log.i(TAG, "angle_left = " + GameActivity.this.angle_left + "distance_left = " + GameActivity.this.distance_left);
                 Log.i(TAG, "angle_right = " + GameActivity.this.angle_right + "distance_right = " + GameActivity.this.distance_right);
                 Log.i(TAG, "send " + arr.length + "byte");
