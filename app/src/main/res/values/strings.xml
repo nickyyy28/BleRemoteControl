@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">蓝牙遥控</string>
+    <string name="app_en_name">Bluetooth_Control</string>
+
+    <string name="scan_device">搜索设备</string>
+    <string name="game_page">GAME</string>
+
+    <string name="textView">this is a textView</string>
+    <string name="test">test</string>
+
+    <string name="ble_not_supported">设备不支持Ble</string>
+
+</resources>
