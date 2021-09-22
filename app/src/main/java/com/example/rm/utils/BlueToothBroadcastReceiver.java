@@ -34,12 +34,15 @@ public class BlueToothBroadcastReceiver extends BroadcastReceiver {
 
     ArrayAdapter<String> adapter;
 
-    BluetoothDevice getDevice(String name)
-    {
+    BluetoothDevice getDevice(String name) {
         return devices.getOrDefault(name, null);
     }
 
     public BlueToothBroadcastReceiver() {
+    }
+
+    public void clearDevices() {
+        devices.clear();
     }
 
     @Override
@@ -48,11 +51,11 @@ public class BlueToothBroadcastReceiver extends BroadcastReceiver {
         if (BluetoothDevice.ACTION_FOUND.equals(action)) {
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
-            if (device == null || device.getName() == null || device.getAddress()==null){
+            if (device == null || device.getName() == null || device.getAddress() == null) {
                 return;
             }
 
-            if (! devices.containsKey(device.getName())){
+            if (!devices.containsKey(device.getName())) {
                 Toast.makeText(context, "find device " + device.getName(), Toast.LENGTH_SHORT).show();
                 devices.put(device.getName(), device);
 

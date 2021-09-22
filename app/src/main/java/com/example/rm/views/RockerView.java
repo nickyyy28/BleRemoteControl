@@ -93,6 +93,15 @@ public class RockerView extends View {
     private Bitmap mRockerBitmap;
     private int mRockerColor;
 
+    public boolean isLeft() {
+        return isLeft;
+    }
+
+    public void setLeft(boolean left) {
+        isLeft = left;
+    }
+
+    private boolean isLeft = false;
 
     public RockerView(Context context, AttributeSet attrs) {
         super(context, attrs);

@@ -21,16 +21,6 @@
             tools:ignore="MissingConstraints" />
 
 
-        <Button
-            android:id="@+id/jump_page2"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_gravity="center"
-            android:text="@string/game_page"
-            android:shadowColor="@color/black"/>
-
-
-
         <ListView
             android:id="@+id/list_view"
             android:layout_width="wrap_content"

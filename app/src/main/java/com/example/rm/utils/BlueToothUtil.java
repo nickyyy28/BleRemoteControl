@@ -7,6 +7,7 @@ import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattDescriptor;
+import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
@@ -26,6 +27,7 @@ import com.example.rm.R;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -35,12 +37,51 @@ public class BlueToothUtil {
     private static final BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
     private static final BlueToothBroadcastReceiver receiver = new BlueToothBroadcastReceiver();
 
+    private static BluetoothGattService writeGattService = null;
+    private static BluetoothGattCharacteristic writeGattCharacteristic = null;
+
+    public static BluetoothGattService getWriteGattService() {
+        return writeGattService;
+    }
+
+    public static void setWriteGattService(BluetoothGattService writeGattService) {
+        BlueToothUtil.writeGattService = writeGattService;
+    }
+
+    public static BluetoothGattCharacteristic getWriteGattCharacteristic() {
+        return writeGattCharacteristic;
+    }
+
+    public static void setWriteGattCharacteristic(BluetoothGattCharacteristic writeGattCharacteristic) {
+        BlueToothUtil.writeGattCharacteristic = writeGattCharacteristic;
+    }
+
+    public static boolean isConnectStatus() {
+        return connectStatus;
+    }
+
+    public static void setConnectStatus(boolean connectStatus) {
+        BlueToothUtil.connectStatus = connectStatus;
+    }
+
+    private static boolean connectStatus = false;
+
     public static BluetoothManager getBluetoothManager() {
         return bluetoothManager;
     }
 
     public static void setBluetoothManager(BluetoothManager bluetoothManager) {
         BlueToothUtil.bluetoothManager = bluetoothManager;
+    }
+
+    public static void disConnectGatt() {
+        if (bluetoothGatt != null){
+            bluetoothGatt.disconnect();
+        }
+    }
+
+    public static void clearDevices() {
+        receiver.clearDevices();
     }
 
     private static BluetoothManager bluetoothManager;
@@ -61,11 +102,11 @@ public class BlueToothUtil {
 
     private static BluetoothGatt bluetoothGatt;
 
-    public static void setServerSocket(BluetoothSocket socket){
+    public static void setServerSocket(BluetoothSocket socket) {
         serverSocket = socket;
     }
 
-    public static void setClientSocket(BluetoothSocket socket){
+    public static void setClientSocket(BluetoothSocket socket) {
         clientSocket = socket;
     }
 
@@ -76,7 +117,7 @@ public class BlueToothUtil {
 
     private static socketMode mode = socketMode.CLIENT;
 
-    public static void setMode(int code){
+    public static void setMode(int code) {
         if (code > 0) {
             mode = socketMode.SERVER;
         } else {
@@ -85,7 +126,7 @@ public class BlueToothUtil {
     }
 
     public static InputStream getInputStream() throws IOException {
-        if (mode == socketMode.SERVER){
+        if (mode == socketMode.SERVER) {
             return serverSocket.getInputStream();
         } else {
             return clientSocket.getInputStream();
@@ -93,7 +134,7 @@ public class BlueToothUtil {
     }
 
     public static OutputStream getOutputStream() throws IOException {
-        if (mode == socketMode.SERVER){
+        if (mode == socketMode.SERVER) {
             return serverSocket.getOutputStream();
         } else {
             boolean a = clientSocket.isConnected();
@@ -102,7 +143,7 @@ public class BlueToothUtil {
     }
 
 
-    public static void startAccept(Activity activity){
+    public static void startAccept(Activity activity) {
         AcceptThread thread = new AcceptThread(adapter, serverSocket, activity);
 
         thread.start();
@@ -140,8 +181,7 @@ public class BlueToothUtil {
 
     }
 
-    public static BluetoothDevice getDeviceByName(String name)
-    {
+    public static BluetoothDevice getDeviceByName(String name) {
         return receiver.getDevice(name);
     }
 
@@ -151,11 +191,11 @@ public class BlueToothUtil {
 
     }
 
-    public static void cancelBlueScan(){
+    public static void cancelBlueScan() {
         adapter.cancelDiscovery();
     }
 
-    public static void setAdapter(ArrayAdapter<String> adapter){
+    public static void setAdapter(ArrayAdapter<String> adapter) {
         receiver.setAdapter(adapter);
     }
 
@@ -179,7 +219,7 @@ public class BlueToothUtil {
 
     public static void startDiscovery(Activity activity) {
         if (!adapter.isDiscovering()) {
-            if (!adapter.startDiscovery()){
+            if (!adapter.startDiscovery()) {
                 Toast.makeText(activity, "start scan failed", Toast.LENGTH_SHORT).show();
             }
         }
@@ -193,7 +233,7 @@ public class BlueToothUtil {
         return adapter;
     }
 
-    public static void UtilInit(Activity activity){
+    public static void UtilInit(Activity activity) {
         if (!activity.getPackageManager().hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
             Toast.makeText(activity, R.string.ble_not_supported, Toast.LENGTH_SHORT).show();
             activity.finish();
@@ -348,11 +388,53 @@ class ConnectThread extends Thread {
             @Override
             public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
                 super.onConnectionStateChange(gatt, status, newState);
+                Log.e("BluetoothGatt中中中", "连接状态:" + newState);
+                /**
+                 * 连接状态：
+                 *    * The profile is in disconnected state   *public static final int STATE_DISCONNECTED  = 0;
+                 *    * The profile is in connecting state     *public static final int STATE_CONNECTING    = 1;
+                 *    * The profile is in connected state      *public static final int STATE_CONNECTED    = 2;
+                 *    * The profile is in disconnecting state  *public static final int STATE_DISCONNECTING = 3;
+                 *
+                 */
+
+                if (BluetoothGatt.STATE_CONNECTED == newState) {
+                    Log.e("Bluetooth", "连接成功:");
+                    BlueToothUtil.setConnectStatus(true);
+                    gatt.discoverServices();//必须有，可以让onServicesDiscovered显示所有Services
+                    //tx_display.append("连接成功");
+//                    Toast.makeText(mContext, "连接成功", Toast.LENGTH_SHORT).show();
+                } else if (BluetoothGatt.STATE_DISCONNECTED == newState) {
+                    Log.e("Bluetooth", "断开连接:");
+                    BlueToothUtil.setConnectStatus(false);
+//                    Toast.makeText(mContext, "断开连接", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onServicesDiscovered(BluetoothGatt gatt, int status) {
                 super.onServicesDiscovered(gatt, status);
+                List<BluetoothGattService> list = bluetoothGatt.getServices();
+                for (BluetoothGattService bluetoothGattService:list){
+                    String str = bluetoothGattService.getUuid().toString();
+//                    Log.e("onServicesDisc中中中", " ：" + str);
+                    List<BluetoothGattCharacteristic> gattCharacteristics = bluetoothGattService
+                            .getCharacteristics();
+                    for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+//                        Log.e("onServicesDisc中中中", " ：" + gattCharacteristic.getUuid());
+                        if("d973f2e2-b19e-11e2-9e96-0800200c9a66".equals(gattCharacteristic.getUuid().toString())){
+//                            linkLossService=bluetoothGattService;
+                            System.out.println("get right service");
+                            BlueToothUtil.setWriteGattService(bluetoothGattService);
+//                            alertLevel=gattCharacteristic;
+                            BlueToothUtil.setWriteGattCharacteristic(gattCharacteristic);
+//                            Log.e("daole",alertLevel.getUuid().toString());
+                        }
+                    }
+
+                }
+//                enableNotification(true,gatt,alertLevel);//必须要有，否则接收不到数据
+
             }
 
             @Override

@@ -3,6 +3,7 @@ package com.example.rm;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,6 +35,26 @@ public class GameActivity extends AppCompatActivity {
 
     long leftTimeStamp;
     long rightTimeStamp;
+
+    private Handler mHandler;
+
+    public final Handler handler = new Handler() {
+        @SuppressLint("HandlerLeak")
+        public void handleMessage(Message msg) {
+            // 处理消息
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    Toast.makeText(GameActivity.this, "蓝牙断开", Toast.LENGTH_SHORT).show();
+                    GameActivity.this.finish();
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        ;
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,26 +131,34 @@ public class GameActivity extends AppCompatActivity {
             });
         }
 
-        final Handler mHandler = new Handler();
+        mHandler = new Handler();
+
         Runnable r = new Runnable() {
             final static String TAG = "Timer task";
-            OutputStream outputStream = null;
-            {
-//                try {
-//                    outputStream = BlueToothUtil.getOutputStream();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-            }
+
+            boolean lastState = false;
+            boolean curState = false;
 
             @Override
             public void run() {
-                 if (TimeTool.getTimestamp() - GameActivity.this.leftTimeStamp > 100) {
-                     GameActivity.this.angle_left = 0;
-                     GameActivity.this.distance_left = 0;
-                 }
+                lastState = curState;
+                curState = BlueToothUtil.isConnectStatus();
 
-                if (TimeTool.getTimestamp() - GameActivity.this.rightTimeStamp > 100) {
+                boolean isContinue = true;
+
+                if (lastState && !curState) {
+                    Message message = GameActivity.this.handler.obtainMessage();
+                    message.what = 1;
+                    handler.sendMessage(message);
+                    isContinue = false;
+                }
+
+                if (TimeTool.getTimestamp() - GameActivity.this.leftTimeStamp > 500) {
+                    GameActivity.this.angle_left = 0;
+                    GameActivity.this.distance_left = 0;
+                }
+
+                if (TimeTool.getTimestamp() - GameActivity.this.rightTimeStamp > 500) {
                     GameActivity.this.angle_right = 0;
                     GameActivity.this.distance_right = 0;
                 }
@@ -138,6 +167,14 @@ public class GameActivity extends AppCompatActivity {
                 GameActivity.this.data.updateChannels(GameActivity.this.angle_left, GameActivity.this.distance_left, GameActivity.this.angle_right, GameActivity.this.distance_right);
 
                 byte[] arr = GameActivity.this.data.getDataPack();
+
+                if (BlueToothUtil.getWriteGattCharacteristic() != null) {
+                    boolean b = BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
+                    BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+                    if (!b) {
+                        System.out.println("send data failed");
+                    }
+                }
 
 //                try {
 //                    outputStream.write(arr);
@@ -149,16 +186,26 @@ public class GameActivity extends AppCompatActivity {
                 Log.i(TAG, "angle_left = " + GameActivity.this.angle_left + "distance_left = " + GameActivity.this.distance_left);
                 Log.i(TAG, "angle_right = " + GameActivity.this.angle_right + "distance_right = " + GameActivity.this.distance_right);
                 Log.i(TAG, "send " + arr.length + "byte");
-                //每隔1s循环执行run方法
-                mHandler.postDelayed(this, 50);
+
+                //每隔50ms循环执行run方法
+                if (isContinue) {
+                    mHandler.postDelayed(this, 50);
+                }
             }
         };
 
         //主线程中调用：
-        mHandler.postDelayed(r, 100);//延时100毫秒
+        mHandler.postDelayed(r, 2000);//延时2s
 
 
 //        addContentView(new VirtualKeyView(this));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        BlueToothUtil.disConnectGatt();
+
     }
 }
 
@@ -171,17 +218,20 @@ class rmData {
     public rmData() {
     }
 
-    public void updateChannels(float distance_left, float angle_left, float distance_right, float angle_right){
-
+    public void updateChannels(float distance_left, float angle_left, float distance_right, float angle_right) {
+        channel1 = (float) (Math.cos((double) (360 - angle_left)) * distance_left);
+        channel2 = (float) (Math.sin((double) (360 - angle_left)) * distance_left);
+        channel3 = (float) (Math.cos((double) (360 - angle_right)) * distance_right);
+        channel4 = (float) (Math.sin((double) (360 - angle_right)) * distance_right);
     }
 
-    private byte[] float2bytes(float f){
+    private byte[] float2bytes(float f) {
         ByteBuffer buffer = ByteBuffer.allocate(4);
         buffer.putFloat(f);
         return buffer.array();
     }
 
-    public byte[] getDataPack(){
+    public byte[] getDataPack() {
         ByteBuffer buffer = ByteBuffer.allocate(18);
         buffer.put((byte) 0x5A);
         buffer.put(float2bytes(channel1));

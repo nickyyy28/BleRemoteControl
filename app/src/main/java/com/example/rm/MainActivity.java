@@ -89,6 +89,8 @@ public class MainActivity extends AppCompatActivity {
 //                    };
 //                    new Timer().schedule(timerTask, 12 * 1000);
 //                }
+            BlueToothUtil.clearDevices();
+
             checkBTPermission();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
@@ -129,6 +131,9 @@ public class MainActivity extends AppCompatActivity {
 
             BlueToothUtil.bluetoothInit(this);
 
+            adapter.clear();
+            adapter.notifyDataSetChanged();
+
         });
 
         if (Build.VERSION.SDK_INT >= 6.0) {
@@ -136,15 +141,6 @@ public class MainActivity extends AppCompatActivity {
                             Manifest.permission.ACCESS_FINE_LOCATION},
                     MY_PERMISSION_REQUEST_CONSTANT);
         }
-
-
-
-        Button btn_2 = (Button) findViewById(R.id.jump_page2);
-
-        btn_2.setOnClickListener(view -> {
-            Intent intent = new Intent("com.example.rm.GAME_ACTION");
-            startActivity(intent);
-        });
 
         ListView listView = (ListView) findViewById(R.id.list_view);
         listView.setAdapter(adapter);
