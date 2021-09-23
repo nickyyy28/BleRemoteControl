@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 //    private final String[] data = {"Apple", "Banana", "Cheery", "Orange", "WaterMelon", "Lemon", "Pineapple"};
 
     private void checkBTPermission() {
-        Toast.makeText(this, "checkBTPermission: Start", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "checkBTPermission: Start", Toast.LENGTH_SHORT).show();
         if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
             int permissionCheck = 0;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
@@ -50,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
         }
-        Toast.makeText(this, "checkBTPermission: Finish", Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "checkBTPermission: Finish", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 String name = adapter.getItem(i);
 
                 try {
-                    BlueToothUtil.clientConnect(BlueToothUtil.getDeviceByName(name), MainActivity.this);
+                    BlueToothUtil.clientConnect(BlueToothUtil.getDeviceByName(name.split("\n")[0]), MainActivity.this);
                 } catch (IOException e) {
                     e.printStackTrace();
                     return;

@@ -36,6 +36,7 @@ public class RockerView extends View {
 
     private Point mRockerPosition;
     private Point mCenterPoint;
+    private Point lastPoint;
 
     private int mAreaRadius;
     private int mRockerRadius;
@@ -102,6 +103,21 @@ public class RockerView extends View {
     }
 
     private boolean isLeft = false;
+
+    public enum TOUCH_STATE{
+        TOUCHED,
+        UNTOUCHED
+    }
+
+    public TOUCH_STATE getState() {
+        return state;
+    }
+
+    public void setState(TOUCH_STATE state) {
+        this.state = state;
+    }
+
+    private TOUCH_STATE state = TOUCH_STATE.UNTOUCHED;
 
     public RockerView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -278,21 +294,49 @@ public class RockerView extends View {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:// 按下
                 // 回调 开始
+                state = TOUCH_STATE.TOUCHED;
                 callBackStart();
             case MotionEvent.ACTION_MOVE:// 移动
                 float moveX = event.getX();
                 float moveY = event.getY();
                 mRockerPosition = getRockerPositionPoint(mCenterPoint, new Point((int) moveX, (int) moveY), mAreaRadius, mRockerRadius);
+                lastPoint = mRockerPosition;
                 moveRocker(mRockerPosition.x, mRockerPosition.y);
                 break;
             case MotionEvent.ACTION_UP:// 抬起
-            case MotionEvent.ACTION_CANCEL:// 移出区域
-                // 回调 结束
-                callBackFinish();
+                state = TOUCH_STATE.UNTOUCHED;
                 float upX = event.getX();
                 float upY = event.getY();
-                moveRocker(mCenterPoint.x, mCenterPoint.y);
+                if (isLeft) {
+                    mRockerPosition = getLeftOnUpTouchPositionPoint(mCenterPoint, new Point((int) upX,(int) upY), mAreaRadius, mRockerRadius);
+                    lastPoint = mRockerPosition;
+                    moveRocker(mRockerPosition.x, mRockerPosition.y);
+                } else {
+                    moveRocker(mCenterPoint.x, mCenterPoint.y);
+                }
+
+                System.out.println("ACTION_UP");
+
+
+                callBackFinish();
+
                 Logger.i(TAG, "onTouchEvent: 抬起位置 : x = " + upX + " y = " + upY);
+                break;
+            case MotionEvent.ACTION_CANCEL:// 移出区域
+                state = TOUCH_STATE.UNTOUCHED;
+                // 回调 结束
+                if (isLeft) {
+                    mRockerPosition = getLeftOnUpTouchPositionPoint(mCenterPoint, lastPoint, mAreaRadius, mRockerRadius);
+                    lastPoint = mRockerPosition;
+                    moveRocker(mRockerPosition.x, mRockerPosition.y);
+                } else {
+                    moveRocker(mCenterPoint.x, mCenterPoint.y);
+                }
+
+                System.out.println("ACTION_CANCEL");
+
+                callBackFinish();
+
                 break;
         }
         return true;
@@ -331,6 +375,44 @@ public class RockerView extends View {
             int showPointY = (int) (centerPoint.y + (regionRadius - rockerRadius) * Math.sin(radian));
             return new Point(showPointX, showPointY);
         }
+    }
+
+    private Point getLeftOnUpTouchPositionPoint(Point centerPoint, Point touchPoint, float regionRadius, float rockerRadius) {
+        // 两点在X轴的距离
+        float lenX = (float) (touchPoint.x - centerPoint.x);
+        // 两点在Y轴距离
+        float lenY = (float) (touchPoint.y - centerPoint.y);
+        // 两点距离
+        float lenXY = (float) Math.sqrt((double) (lenX * lenX + lenY * lenY));
+        // 计算弧度
+        double radian = Math.acos(lenX / lenXY) * (touchPoint.y < centerPoint.y ? -1 : 1);
+        // 计算角度
+        double angle = ((360 - radian2Angle(radian)) > 0 && (360 - radian2Angle(radian)) <= 180) ? 90 : 270;
+
+
+
+        Point point;
+        int showPointX;
+        int showPointY;
+
+        Logger.i(TAG, "getRockerPositionPoint: 角度 :" + angle);
+        if (lenXY + rockerRadius <= regionRadius) { // 触摸位置在可活动范围内
+            showPointX = centerPoint.x;
+            showPointY = (int) (centerPoint.y - lenXY * Math.sin(Math.toRadians(360 - radian2Angle(radian))));
+            point = new Point(showPointX, showPointY);
+
+        } else { // 触摸位置在可活动范围以外
+            // 计算要显示的位置
+            showPointX = centerPoint.x;
+            showPointY = (int) (centerPoint.y - (regionRadius - rockerRadius) * Math.sin(Math.toRadians(360 - radian2Angle(radian))));
+            point = new Point(showPointX, showPointY);
+        }
+        // 回调 返回参数
+        callBack(360 - angle, Math.abs(showPointY - centerPoint.y));
+
+        System.out.println("angle = " + angle + " distance = " + Math.abs(showPointY - centerPoint.y));
+
+        return point;
     }
 
     /**

@@ -7,11 +7,14 @@
     android:padding="30dp"
     tools:context=".GameActivity">
 
+
     <TextView
-        android:id="@+id/distance"
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        />
+        android:id="@+id/msgs"
+        android:layout_width="match_parent"
+        android:layout_height="160dp"
+        android:textSize="30sp"
+        android:textAlignment="center" />
+
 
     <com.example.rm.views.RockerView
         android:id="@+id/rockerView_left"
@@ -22,11 +25,6 @@
         kongqw:rockerBackground="@drawable/default_rocker_bg"
         kongqw:rockerRadius="30dp" />
 
-    <TextView
-        android:id="@+id/log_left"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/rockerView_left" />
 
 <!--    <TextView-->
 <!--        android:id="@+id/tip_left"-->
@@ -39,18 +37,12 @@
         android:id="@+id/rockerView_right"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentBottom="true"
         kongqw:areaBackground="@mipmap/view_big"
         kongqw:rockerBackground="@mipmap/view_small"
         kongqw:rockerRadius="30dp" />
 
-    <TextView
-        android:id="@+id/log_right"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/rockerView_left"
-        android:layout_alignParentRight="true" />
 
 <!--    <TextView-->
 <!--        android:id="@+id/tip_right"-->

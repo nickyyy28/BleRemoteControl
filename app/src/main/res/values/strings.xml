@@ -9,5 +9,7 @@
     <string name="test">test</string>
 
     <string name="ble_not_supported">设备不支持Ble</string>
+    <string name="aaa">aaaaaaaaaaaaaaaaaaa</string>
+    <string name="bbbbbb">bbbbbb</string>
 
 </resources>

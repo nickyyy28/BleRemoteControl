@@ -56,14 +56,14 @@ public class BlueToothBroadcastReceiver extends BroadcastReceiver {
             }
 
             if (!devices.containsKey(device.getName())) {
-                Toast.makeText(context, "find device " + device.getName(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "FIND DEVICE " + device.getName(), Toast.LENGTH_SHORT).show();
                 devices.put(device.getName(), device);
 
                 Log.d(TAG, "onReceive: " + adapter);
 
 //                device.
 
-                adapter.add(device.getName());
+                adapter.add(device.getName() + "\n" + device.getAddress());
                 adapter.notifyDataSetChanged();
             }
         }

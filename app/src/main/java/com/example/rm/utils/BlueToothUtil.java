@@ -220,7 +220,7 @@ public class BlueToothUtil {
     public static void startDiscovery(Activity activity) {
         if (!adapter.isDiscovering()) {
             if (!adapter.startDiscovery()) {
-                Toast.makeText(activity, "start scan failed", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "SCAN FAILED", Toast.LENGTH_SHORT).show();
             }
         }
     }

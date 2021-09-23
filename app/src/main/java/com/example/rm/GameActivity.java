@@ -18,12 +18,9 @@ import com.example.rm.views.RockerView;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.text.DecimalFormat;
 
 public class GameActivity extends AppCompatActivity {
-
-    private TextView mLogLeft;
-    private TextView mLogRight;
-    private TextView mDistance;
 
     public rmData data = new rmData();
 
@@ -32,6 +29,11 @@ public class GameActivity extends AppCompatActivity {
 
     public float distance_right;
     public float angle_right;
+
+    private RockerView rockerViewLeft;
+    private RockerView rockerViewRight;
+
+    TextView textView;
 
     long leftTimeStamp;
     long rightTimeStamp;
@@ -45,15 +47,31 @@ public class GameActivity extends AppCompatActivity {
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    Toast.makeText(GameActivity.this, "蓝牙断开", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(GameActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
                     GameActivity.this.finish();
                     break;
                 default:
                     break;
             }
         }
+    };
 
-        ;
+    private final Handler updateChannel = new Handler() {
+        @SuppressLint("HandlerLeak")
+        public void handleMessage(Message msg) {
+            // 处理消息
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    DecimalFormat df = new DecimalFormat("000.000");
+                    String buffer = "油门: " + (data.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel2())) + "\n偏航: " + (data.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel1())) + "\n" +
+                            "翻滚: " + (data.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel3())) + "\n俯仰: " + (data.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel4()));
+                    textView.setText(buffer);
+                    break;
+                default:
+                    break;
+            }
+        }
     };
 
     @Override
@@ -63,20 +81,18 @@ public class GameActivity extends AppCompatActivity {
 
         ActionBar actionBar = getSupportActionBar();
 
+        textView = (TextView) findViewById(R.id.msgs);
+
         if (actionBar != null) {
             actionBar.hide();
         }
 
-        mLogLeft = (TextView) findViewById(R.id.log_left);
-        mLogRight = (TextView) findViewById(R.id.log_right);
-        mDistance = (TextView) findViewById(R.id.distance);
-
-        RockerView rockerViewLeft = (RockerView) findViewById(R.id.rockerView_left);
+        rockerViewLeft = (RockerView) findViewById(R.id.rockerView_left);
         if (rockerViewLeft != null) {
             rockerViewLeft.setOnAngleChangeListener(new RockerView.OnAngleChangeListener() {
                 @Override
                 public void onStart() {
-                    mLogLeft.setText(null);
+
                 }
 
                 @Override
@@ -98,13 +114,15 @@ public class GameActivity extends AppCompatActivity {
             });
         }
 
-        RockerView rockerViewRight = (RockerView) findViewById(R.id.rockerView_right);
+        assert rockerViewLeft != null;
+        rockerViewLeft.setLeft(true);
+
+        rockerViewRight = (RockerView) findViewById(R.id.rockerView_right);
         if (rockerViewRight != null) {
             rockerViewRight.setOnAngleChangeListener(new RockerView.OnAngleChangeListener() {
                 @Override
                 public void onStart() {
-                    mLogRight.setText(null);
-                    mDistance.setText(null);
+
                 }
 
                 @SuppressLint("SetTextI18n")
@@ -125,8 +143,7 @@ public class GameActivity extends AppCompatActivity {
 
                 @Override
                 public void onFinish() {
-                    mLogRight.setText(null);
-                    mDistance.setText(null);
+
                 }
             });
         }
@@ -153,24 +170,38 @@ public class GameActivity extends AppCompatActivity {
                     isContinue = false;
                 }
 
-                if (TimeTool.getTimestamp() - GameActivity.this.leftTimeStamp > 500) {
-                    GameActivity.this.angle_left = 0;
-                    GameActivity.this.distance_left = 0;
-                }
+//                if (TimeTool.getTimestamp() - GameActivity.this.leftTimeStamp > 500) {
+//                    GameActivity.this.angle_left = 0;
+//                    GameActivity.this.distance_left = 0;
+//                }
+//
+//                if (TimeTool.getTimestamp() - GameActivity.this.rightTimeStamp > 500) {
+//                    GameActivity.this.angle_right = 0;
+//                    GameActivity.this.distance_right = 0;
+//                }
 
-                if (TimeTool.getTimestamp() - GameActivity.this.rightTimeStamp > 500) {
+//                if (GameActivity.this.rockerViewLeft.getState() == RockerView.TOUCH_STATE.UNTOUCHED){
+//                    GameActivity.this.angle_left = 0;
+//                    GameActivity.this.distance_left = 0;
+//                }
+
+                if (GameActivity.this.rockerViewRight.getState() == RockerView.TOUCH_STATE.UNTOUCHED){
                     GameActivity.this.angle_right = 0;
                     GameActivity.this.distance_right = 0;
                 }
 
-
-                GameActivity.this.data.updateChannels(GameActivity.this.angle_left, GameActivity.this.distance_left, GameActivity.this.angle_right, GameActivity.this.distance_right);
+                GameActivity.this.data.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right);
 
                 byte[] arr = GameActivity.this.data.getDataPack();
 
                 if (BlueToothUtil.getWriteGattCharacteristic() != null) {
                     boolean b = BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
                     BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+
+                    Message message = GameActivity.this.updateChannel.obtainMessage();
+                    message.what = 1;
+                    GameActivity.this.updateChannel.sendMessage(message);
+
                     if (!b) {
                         System.out.println("send data failed");
                     }
@@ -197,6 +228,10 @@ public class GameActivity extends AppCompatActivity {
         //主线程中调用：
         mHandler.postDelayed(r, 2000);//延时2s
 
+        DecimalFormat df = new DecimalFormat("000.000");
+        String buffer = "油门: " + (data.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel2())) + "\n偏航: " + (data.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel1())) + "\n" +
+                "翻滚: " + (data.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel3())) + "\n俯仰: " + (data.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel4()));
+        textView.setText(buffer);
 
 //        addContentView(new VirtualKeyView(this));
     }
@@ -213,16 +248,36 @@ class rmData {
     float channel1 = 0;
     float channel2 = 0;
     float channel3 = 0;
+
+    public float getChannel1() {
+        return channel1;
+    }
+
+    public float getChannel2() {
+        return channel2;
+    }
+
+    public float getChannel3() {
+        return channel3;
+    }
+
+    public float getChannel4() {
+        return channel4;
+    }
+
     float channel4 = 0;
 
     public rmData() {
     }
 
     public void updateChannels(float distance_left, float angle_left, float distance_right, float angle_right) {
-        channel1 = (float) (Math.cos((double) (360 - angle_left)) * distance_left);
-        channel2 = (float) (Math.sin((double) (360 - angle_left)) * distance_left);
-        channel3 = (float) (Math.cos((double) (360 - angle_right)) * distance_right);
-        channel4 = (float) (Math.sin((double) (360 - angle_right)) * distance_right);
+        channel1 = (float) (Math.cos(Math.toRadians(360 - angle_left)) * distance_left);
+        channel2 = (float) (Math.sin((double) (Math.toRadians(360 - angle_left))) * distance_left);
+        channel3 = (float) (Math.cos((double) (Math.toRadians(360 - angle_right))) * distance_right);
+        channel4 = (float) (Math.sin((double) (Math.toRadians(360 - angle_right))) * distance_right);
+
+        System.out.println("ch1 = " + channel1 + " ch2 = " + channel2);
+        System.out.println("ch3 = " + channel3 + " ch4 = " + channel4);
     }
 
     private byte[] float2bytes(float f) {
