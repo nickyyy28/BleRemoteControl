@@ -11,18 +11,23 @@ import android.widget.Toast;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.rm.other.RockerData;
 import com.example.rm.utils.BlueToothUtil;
 import com.example.rm.utils.TimeTool;
 import com.example.rm.views.RockerView;
+
+import com.example.rm.other.rmData;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 
 public class GameActivity extends AppCompatActivity {
 
-    public rmData data = new rmData();
+    public rmData rmdata = new rmData();
+    public RockerData data = new RockerData(rmdata);
 
     public float distance_left;
     public float angle_left;
@@ -64,8 +69,8 @@ public class GameActivity extends AppCompatActivity {
             switch (msg.what) {
                 case 1:
                     DecimalFormat df = new DecimalFormat("000.000");
-                    String buffer = "油门: " + (data.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel2())) + "\n偏航: " + (data.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel1())) + "\n" +
-                            "翻滚: " + (data.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel3())) + "\n俯仰: " + (data.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel4()));
+                    String buffer = "油门: " + (rmdata.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel2())) + "\n偏航: " + (rmdata.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel1())) + "\n" +
+                            "翻滚: " + (rmdata.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel3())) + "\n俯仰: " + (rmdata.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel4()));
                     textView.setText(buffer);
                     break;
                 default:
@@ -170,6 +175,8 @@ public class GameActivity extends AppCompatActivity {
                     isContinue = false;
                 }
 
+                System.out.println("err = " + (BlueToothUtil.getEndStamp() - BlueToothUtil.getStartStamp()));
+
 //                if (TimeTool.getTimestamp() - GameActivity.this.leftTimeStamp > 500) {
 //                    GameActivity.this.angle_left = 0;
 //                    GameActivity.this.distance_left = 0;
@@ -190,13 +197,16 @@ public class GameActivity extends AppCompatActivity {
                     GameActivity.this.distance_right = 0;
                 }
 
-                GameActivity.this.data.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right);
+                GameActivity.this.rmdata.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right);
 
-                byte[] arr = GameActivity.this.data.getDataPack();
+                byte[] arr = GameActivity.this.data.getPack();
+                System.out.println("arr" + Arrays.toString(arr));
 
                 if (BlueToothUtil.getWriteGattCharacteristic() != null) {
                     boolean b = BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
                     BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+
+                    System.out.println("send data success!");
 
                     Message message = GameActivity.this.updateChannel.obtainMessage();
                     message.what = 1;
@@ -205,33 +215,56 @@ public class GameActivity extends AppCompatActivity {
                     if (!b) {
                         System.out.println("send data failed");
                     }
+                } else {
+                    System.out.println("send data failed");
                 }
 
-//                try {
-//                    outputStream.write(arr);
-//                } catch (IOException e) {
-////                    Toast.makeText(GameActivity.this, "发送数据失败", Toast.LENGTH_SHORT).show();
-//
-//                    e.printStackTrace();
-//                }
-                Log.i(TAG, "angle_left = " + GameActivity.this.angle_left + "distance_left = " + GameActivity.this.distance_left);
-                Log.i(TAG, "angle_right = " + GameActivity.this.angle_right + "distance_right = " + GameActivity.this.distance_right);
+//                Log.i(TAG, "angle_left = " + GameActivity.this.angle_left + "distance_left = " + GameActivity.this.distance_left);
+//                Log.i(TAG, "angle_right = " + GameActivity.this.angle_right + "distance_right = " + GameActivity.this.distance_right);
                 Log.i(TAG, "send " + arr.length + "byte");
 
                 //每隔50ms循环执行run方法
                 if (isContinue) {
-                    mHandler.postDelayed(this, 50);
+                    mHandler.postDelayed(this, 20);
                 }
+
             }
         };
 
         //主线程中调用：
-        mHandler.postDelayed(r, 2000);//延时2s
+        mHandler.postDelayed(r, 3000);//延时2s
 
         DecimalFormat df = new DecimalFormat("000.000");
-        String buffer = "油门: " + (data.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel2())) + "\n偏航: " + (data.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel1())) + "\n" +
-                "翻滚: " + (data.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel3())) + "\n俯仰: " + (data.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(data.getChannel4()));
+        String buffer = "油门: " + (rmdata.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel2())) + "\n偏航: " + (rmdata.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel1())) + "\n" +
+                "翻滚: " + (rmdata.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel3())) + "\n俯仰: " + (rmdata.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel4()));
         textView.setText(buffer);
+
+        Handler checkHandler = new Handler();
+        Runnable runnable = new Runnable() {
+
+            @Override
+            public void run() {
+                boolean isDiscover = false;
+                if (BlueToothUtil.isDiscoverServices()){
+                    isDiscover = true;
+                    if (!BlueToothUtil.enableNotification(true)){
+                        Toast.makeText(GameActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
+                        GameActivity.this.finish();
+                    }
+                } else {
+                    BlueToothUtil.startDiscoverServices();
+                }
+
+                if (!isDiscover){
+                    checkHandler.postDelayed(this, 2000);
+                }
+
+            }
+        };
+
+//        checkHandler.postDelayed(runnable, 2000);
+
+
 
 //        addContentView(new VirtualKeyView(this));
     }
@@ -242,61 +275,4 @@ public class GameActivity extends AppCompatActivity {
         BlueToothUtil.disConnectGatt();
 
     }
-}
-
-class rmData {
-    float channel1 = 0;
-    float channel2 = 0;
-    float channel3 = 0;
-
-    public float getChannel1() {
-        return channel1;
-    }
-
-    public float getChannel2() {
-        return channel2;
-    }
-
-    public float getChannel3() {
-        return channel3;
-    }
-
-    public float getChannel4() {
-        return channel4;
-    }
-
-    float channel4 = 0;
-
-    public rmData() {
-    }
-
-    public void updateChannels(float distance_left, float angle_left, float distance_right, float angle_right) {
-        channel1 = (float) (Math.cos(Math.toRadians(360 - angle_left)) * distance_left);
-        channel2 = (float) (Math.sin((double) (Math.toRadians(360 - angle_left))) * distance_left);
-        channel3 = (float) (Math.cos((double) (Math.toRadians(360 - angle_right))) * distance_right);
-        channel4 = (float) (Math.sin((double) (Math.toRadians(360 - angle_right))) * distance_right);
-
-        System.out.println("ch1 = " + channel1 + " ch2 = " + channel2);
-        System.out.println("ch3 = " + channel3 + " ch4 = " + channel4);
-    }
-
-    private byte[] float2bytes(float f) {
-        ByteBuffer buffer = ByteBuffer.allocate(4);
-        buffer.putFloat(f);
-        return buffer.array();
-    }
-
-    public byte[] getDataPack() {
-        ByteBuffer buffer = ByteBuffer.allocate(18);
-        buffer.put((byte) 0x5A);
-        buffer.put(float2bytes(channel1));
-        buffer.put(float2bytes(channel2));
-        buffer.put(float2bytes(channel3));
-        buffer.put(float2bytes(channel4));
-
-        buffer.put((byte) 0xA5);
-
-        return buffer.array();
-    }
-
 }

@@ -31,6 +31,12 @@ public class RockerView extends View {
     private static final int DEFAULT_SIZE = 400;
     private static final int DEFAULT_ROCKER_RADIUS = DEFAULT_SIZE / 8;
 
+    public static short getMax() {
+        return max;
+    }
+
+    private static short max;
+
     private Paint mAreaBackgroundPaint;
     private Paint mRockerPaint;
 
@@ -271,6 +277,8 @@ public class RockerView extends View {
             mAreaBackgroundPaint.setColor(Color.GRAY);
             canvas.drawCircle(mCenterPoint.x, mCenterPoint.y, mAreaRadius, mAreaBackgroundPaint);
         }
+
+        max = (short) (mAreaRadius - mRockerRadius);
 
         // 画摇杆
         if (ROCKER_BACKGROUND_MODE_PIC == mRockerBackgroundMode || ROCKER_BACKGROUND_MODE_XML == mRockerBackgroundMode) {
