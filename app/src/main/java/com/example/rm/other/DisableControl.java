@@ -1,46 +1,56 @@
 package com.example.rm.other;
 
-public class DisableControl implements Agreement{
-    @Override
-    public byte[] getAgreeHead() {
-        return new byte[0];
+import java.nio.ByteBuffer;
+
+public class DisableControl extends BaseData{
+    private static final byte cmd_id = (byte) 0xFF;
+
+
+    public DisableControl() {
     }
 
     @Override
     public byte[] getCMD_ID() {
-        return new byte[0];
+        return AgreeUtil.getBytes(cmd_id);
     }
 
     @Override
     public byte[] getDataSize() {
-        return new byte[0];
+        return AgreeUtil.getBytes((byte) 0);
     }
 
     @Override
     public byte[] getData() {
-        return new byte[0];
+        return null;
     }
 
     @Override
     public byte[] getCheckSum() {
-        return new byte[0];
-    }
+        byte res = 0;
+        ByteBuffer buffer = ByteBuffer.allocate(3);
+        buffer.put(getAgreeHead());
+        buffer.put(getCMD_ID());
+        buffer.put(getDataSize());
 
-    @Override
-    public byte[] getAgreeTail() {
-        return new byte[0];
+        for (byte b : buffer.array()){
+            res += b;
+        }
+        return AgreeUtil.getBytes(res);
     }
 
     @Override
     public byte getTotalSize() {
-        return 0;
+        return 5;
     }
 
     @Override
     public byte[] getPack() {
-        return new byte[0];
-    }
-
-    public DisableControl() {
+        ByteBuffer buffer = ByteBuffer.allocate(getTotalSize());
+        buffer.put(getAgreeHead());
+        buffer.put(getCMD_ID());
+        buffer.put(getDataSize());
+        buffer.put(getCheckSum());
+        buffer.put(getAgreeTail());
+        return buffer.array();
     }
 }

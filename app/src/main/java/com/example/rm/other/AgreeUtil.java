@@ -31,6 +31,10 @@ public class AgreeUtil {
         switch (cmd_id) {
             case 0x01:
                 return (byte) 8;
+            case 0x02:
+                return (byte) 6;
+            case (byte) 0xAA:
+            case (byte) 0xFF:
             default:
                 return (byte) 0;
         }

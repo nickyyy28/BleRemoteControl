@@ -1,33 +1,42 @@
 package com.example.rm;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.rm.other.RockerData;
+import com.example.rm.other.DisableControl;
+import com.example.rm.other.EnableControl;
+import com.example.rm.other.FineTuningControl;
+import com.example.rm.other.ImuControl;
+import com.example.rm.other.RockerControl;
 import com.example.rm.utils.BlueToothUtil;
 import com.example.rm.utils.TimeTool;
 import com.example.rm.views.RockerView;
 
 import com.example.rm.other.rmData;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.Arrays;
 
 public class GameActivity extends AppCompatActivity {
 
     public rmData rmdata = new rmData();
-    public RockerData data = new RockerData(rmdata);
+    public RockerControl data = new RockerControl(rmdata);
+
+    public DisableControl disableControl = new DisableControl();
+    public EnableControl enableControl = new EnableControl();
+    public FineTuningControl fineTuningControl = new FineTuningControl(rmdata);
+    public ImuControl imuControl = new ImuControl();
 
     public float distance_left;
     public float angle_left;
@@ -40,8 +49,28 @@ public class GameActivity extends AppCompatActivity {
 
     TextView textView;
 
+    private float power = 0;
+
     long leftTimeStamp;
     long rightTimeStamp;
+
+    boolean isEnable = false;
+    boolean isFine = false;
+
+    Button btn_reset;
+    Button btn_enable;
+
+
+    Button btn_imu;
+    Button btn_fineCtl;
+
+    private enum ControlState{
+        Normal,     //普通
+        FineCtl,    //微调
+        Stop
+    }
+
+    ControlState state = ControlState.Normal;
 
     private Handler mHandler;
 
@@ -83,6 +112,13 @@ public class GameActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
+        btn_reset = (Button) findViewById(R.id.btn_reset);
+        btn_enable = (Button) findViewById(R.id.btn_enable);
+
+
+        btn_imu = (Button) findViewById(R.id.btn_imu);
+        btn_fineCtl = (Button) findViewById(R.id.btn_fineCtl);
 
         ActionBar actionBar = getSupportActionBar();
 
@@ -197,10 +233,19 @@ public class GameActivity extends AppCompatActivity {
                     GameActivity.this.distance_right = 0;
                 }
 
-                GameActivity.this.rmdata.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right);
+                byte[] arr = null;
 
-                byte[] arr = GameActivity.this.data.getPack();
-                System.out.println("arr" + Arrays.toString(arr));
+                if (GameActivity.this.state == ControlState.Normal){
+                    GameActivity.this.rmdata.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right, false);
+                    arr = GameActivity.this.data.getPack();
+                } else if (GameActivity.this.state == ControlState.FineCtl){
+                    GameActivity.this.rmdata.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right, true);
+                    arr = GameActivity.this.fineTuningControl.getPack();
+                }
+
+                if (arr != null){
+                    System.out.println("arr" + Arrays.toString(arr));
+                }
 
                 if (BlueToothUtil.getWriteGattCharacteristic() != null) {
                     boolean b = BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
@@ -212,9 +257,9 @@ public class GameActivity extends AppCompatActivity {
                     message.what = 1;
                     GameActivity.this.updateChannel.sendMessage(message);
 
-                    if (!b) {
-                        System.out.println("send data failed");
-                    }
+//                    if (!b) {
+//                        System.out.println("send data failed");
+//                    }
                 } else {
                     System.out.println("send data failed");
                 }
@@ -244,29 +289,123 @@ public class GameActivity extends AppCompatActivity {
 
             @Override
             public void run() {
-                boolean isDiscover = false;
-                if (BlueToothUtil.isDiscoverServices()){
-                    isDiscover = true;
-                    if (!BlueToothUtil.enableNotification(true)){
-                        Toast.makeText(GameActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
-                        GameActivity.this.finish();
-                    }
-                } else {
-                    BlueToothUtil.startDiscoverServices();
-                }
+//                boolean isDiscover = false;
+//                if (BlueToothUtil.isDiscoverServices()){
+//                    isDiscover = true;
+//                    if (!BlueToothUtil.enableNotification(true)){
+//                        Toast.makeText(GameActivity.this, "蓝牙已断开", Toast.LENGTH_SHORT).show();
+//                        GameActivity.this.finish();
+//                    }
+//                } else {
+//                    BlueToothUtil.startDiscoverServices();
+//                }
+//
+//                if (!isDiscover){
+//                    checkHandler.postDelayed(this, 2000);
+//                }
+                if (BlueToothUtil.getType() == BlueToothUtil.deviceType.BT_24){
 
-                if (!isDiscover){
-                    checkHandler.postDelayed(this, 2000);
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.ATK_Blue1){
+
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002){
+
                 }
 
             }
         };
 
-//        checkHandler.postDelayed(runnable, 2000);
+        checkHandler.postDelayed(runnable, 2000);
 
+        btn_enable.setText(R.string.start);
+        setButtonRed(btn_enable);
+        setButtonRed(btn_fineCtl);
+        setButtonBlue(btn_imu);
+        setButtonBlack(btn_reset);
 
+        btn_reset.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
 
-//        addContentView(new VirtualKeyView(this));
+            }
+        });
+
+        btn_enable.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!GameActivity.this.isEnable){
+                    GameActivity.this.isEnable = true;
+                    GameActivity.this.btn_enable.setText(R.string.stop);
+
+                    byte[] arr = GameActivity.this.enableControl.getPack();
+                    System.out.println("enable :" + Arrays.toString(arr));
+                    System.out.println("enable :" + arr.length + " byte");
+                    BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
+                    BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+
+                    setButtonGreen(GameActivity.this.btn_enable);
+
+                } else {
+                    GameActivity.this.isEnable = false;
+                    GameActivity.this.btn_enable.setText(R.string.start);
+                    byte[] arr = GameActivity.this.disableControl.getPack();
+                    System.out.println("disable :" + Arrays.toString(arr));
+                    System.out.println("disable :" + arr.length + " byte");
+                    BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
+                    BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+                    setButtonRed(GameActivity.this.btn_enable);
+
+//                    GameActivity.this.state = ControlState.Stop;
+
+                }
+            }
+        });
+
+        btn_fineCtl.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!GameActivity.this.isFine){
+                    GameActivity.this.isFine = true;
+                    setButtonGreen(GameActivity.this.btn_fineCtl);
+                    GameActivity.this.state = ControlState.FineCtl;
+                } else {
+                    GameActivity.this.isFine = false;
+                    setButtonRed(GameActivity.this.btn_fineCtl);
+                    GameActivity.this.state = ControlState.Normal;
+                }
+            }
+        });
+
+        btn_imu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                byte[] arr = GameActivity.this.imuControl.getPack();
+                System.out.println("imu :" + Arrays.toString(arr));
+                System.out.println("imu :" + arr.length + " byte");
+                BlueToothUtil.getWriteGattCharacteristic().setValue(arr);
+                BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+            }
+        });
+
+    }
+
+    private void setButtonColor(Button button, int r, int g, int b){
+        button.setBackgroundColor(Color.argb(1, r, g, b));
+    }
+
+    private void setButtonRed(Button button){
+        button.setBackgroundColor(Color.RED);
+    }
+
+    private void setButtonBlack(Button button){
+        button.setBackgroundColor(Color.BLACK);
+    }
+
+    private void setButtonBlue(Button button){
+        button.setBackgroundColor(Color.BLUE);
+    }
+
+    private void setButtonGreen(Button button){
+        button.setBackgroundColor(Color.GREEN);
     }
 
     @Override
@@ -275,4 +414,6 @@ public class GameActivity extends AppCompatActivity {
         BlueToothUtil.disConnectGatt();
 
     }
+
+
 }

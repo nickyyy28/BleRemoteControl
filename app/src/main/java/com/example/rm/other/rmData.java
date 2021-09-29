@@ -29,13 +29,19 @@ public class rmData {
     public rmData() {
     }
 
-    public void updateChannels(float distance_left, float angle_left, float distance_right, float angle_right) {
+    public void updateChannels(float distance_left, float angle_left, float distance_right, float angle_right, boolean isHalf) {
         short max = RockerView.getMax();
 
-        channel1 = (short) ((Math.cos(Math.toRadians(360 - angle_left)) * distance_left) / max * 100 + 100);
-        channel2 = (short) ((Math.sin(Math.toRadians(360 - angle_left)) * distance_left) / max * 100 + 100);
-        channel3 = (short) ((Math.cos(Math.toRadians(360 - angle_right)) * distance_right) /max * 100 + 100);
-        channel4 = (short) ((Math.sin(Math.toRadians(360 - angle_right)) * distance_right) / max * 100 + 100);
+        short range = 1500;
+
+        if (isHalf){
+            range = (short) (range / 2);
+        }
+
+        channel1 = (short) ((Math.cos(Math.toRadians(360 - angle_left)) * distance_left) / max * range + range);
+        channel2 = (short) ((Math.sin(Math.toRadians(360 - angle_left)) * distance_left) / max * range + range);
+        channel3 = (short) ((Math.cos(Math.toRadians(360 - angle_right)) * distance_right) /max * range + range);
+        channel4 = (short) ((Math.sin(Math.toRadians(360 - angle_right)) * distance_right) / max * range + range);
 
         System.out.println("max = " + max);
         System.out.println("ch1 = " + channel1 + " ch2 = " + channel2);
@@ -55,15 +61,6 @@ public class rmData {
         buffer.putShort(channel3);
         buffer.putShort(channel4);
         return buffer.array();
-    }
-
-    public byte getCheckSum(){
-        byte res = 0;
-        byte[] data = getDataPack();
-        for (byte a : data){
-            res += a;
-        }
-        return res;
     }
 
 }

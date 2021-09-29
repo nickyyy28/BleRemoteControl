@@ -16,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.rm.utils.BlueToothUtil;
@@ -34,17 +35,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void checkBTPermission() {
 //        Toast.makeText(this, "checkBTPermission: Start", Toast.LENGTH_SHORT).show();
-        if(Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP){
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             int permissionCheck = 0;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
                 permissionCheck = this.checkSelfPermission("Manifest.permission.ACCESS_FINE_LOCATION");
                 permissionCheck += this.checkSelfPermission("Manifest.permission.ACCESS_COARSE_LOCATION");
-                if(permissionCheck != 0){
+                if (permissionCheck != 0) {
                     this.requestPermissions(new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION,
                             Manifest.permission.ACCESS_COARSE_LOCATION
                     }, 1001); //any number
-                }else{
+                } else {
                     Toast.makeText(this, "checkBTPermissions: No need to check permissions. SDK version < LOLLIPOP.", Toast.LENGTH_SHORT).show();
                 }
             }
@@ -158,6 +159,27 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     return;
                 }
+            }
+        });
+
+        Spinner s = (Spinner) findViewById(R.id.device_type);
+        s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (adapterView.getSelectedItem().toString().equals(MainActivity.this.getString(R.string.device1))) {
+                    BlueToothUtil.setType(BlueToothUtil.deviceType.ATK_Blue1);
+                    System.out.println("set type ATK_BLUE01");
+                } else if (adapterView.getSelectedItem().toString().equals(MainActivity.this.getString(R.string.device2))) {
+                    System.out.println("set type DX2002");
+                    BlueToothUtil.setType(BlueToothUtil.deviceType.DX2002);
+                } else if (adapterView.getSelectedItem().toString().equals(MainActivity.this.getString(R.string.device3))) {
+                    BlueToothUtil.setType(BlueToothUtil.deviceType.BT_24);
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
 
             }
         });

@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
+import com.example.rm.GameActivity;
 import com.example.rm.R;
 
 import java.io.IOException;
@@ -41,6 +42,22 @@ public class BlueToothUtil {
     private static BluetoothGattCharacteristic writeGattCharacteristic = null;
     private static BluetoothGattCharacteristic notifyGattCharacteristic = null;
 
+    public enum deviceType{
+        DX2002,
+        ATK_Blue1,
+        BT_24
+    }
+
+    public static deviceType getType() {
+        return type;
+    }
+
+    public static void setType(deviceType type) {
+        BlueToothUtil.type = type;
+    }
+
+    private static deviceType type = deviceType.ATK_Blue1;
+
     public static BluetoothGattCharacteristic getNotifyGattCharacteristic() {
         return notifyGattCharacteristic;
     }
@@ -58,6 +75,16 @@ public class BlueToothUtil {
     }
 
     private static BluetoothGattCharacteristic configGattCharacteristic = null;
+
+    public static BluetoothGattCharacteristic getReadGattCharacteristic() {
+        return readGattCharacteristic;
+    }
+
+    public static void setReadGattCharacteristic(BluetoothGattCharacteristic readGattCharacteristic) {
+        BlueToothUtil.readGattCharacteristic = readGattCharacteristic;
+    }
+
+    private static BluetoothGattCharacteristic readGattCharacteristic = null;
 
     public static BluetoothGattService getWriteGattService() {
         return writeGattService;
@@ -432,21 +459,12 @@ class ConnectThread extends Thread {
     private final static UUID ServiceUUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
 
     private final static UUID BT_24_WriteUUID = UUID.fromString("0000ffe2-0000-1000-8000-00805f9b34fb");
-
-    public enum deviceType{
-        DX2002,
-        ATK_Blue1,
-        BT_24
-    }
-
-    deviceType type = ConnectThread.deviceType.DX2002;
+    private final static UUID BT_24_ReadUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
 
     public ConnectThread(BluetoothAdapter adapter, BluetoothSocket socket, BluetoothDevice device, Activity activity) {
         this.activity = activity;
         this.adapter = adapter;
         this.mmSocket = socket;
-
-        type = deviceType.BT_24;
 
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
@@ -522,7 +540,7 @@ class ConnectThread extends Thread {
                 List<BluetoothGattService> list = bluetoothGatt.getServices();
                 BlueToothUtil.setEndStamp(TimeTool.getTimestamp());
 
-                if (type == deviceType.ATK_Blue1){
+                if (BlueToothUtil.getType() == BlueToothUtil.deviceType.ATK_Blue1){
                     for (BluetoothGattService bluetoothGattService:list){
                         String str = bluetoothGattService.getUuid().toString();
 //                    Log.e("onServicesDisc中中中", " ：" + str);
@@ -543,7 +561,7 @@ class ConnectThread extends Thread {
                             }
                         }
                     }
-                } else if (type == deviceType.DX2002){
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002){
                     for (BluetoothGattService gattService : list)
                     {
                         Log.i(TAG, gattService.getUuid().toString());
@@ -573,7 +591,7 @@ class ConnectThread extends Thread {
                             }
                         }
                     }
-                } else if (type == deviceType.BT_24){
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.BT_24){
                     for (BluetoothGattService bluetoothGattService:list){
                         String str = bluetoothGattService.getUuid().toString();
 //                    Log.e("onServicesDisc中中中", " ：" + str);
@@ -591,13 +609,27 @@ class ConnectThread extends Thread {
                                 Intent intent = new Intent("com.example.rm.GAME_ACTION");
                                 activity.startActivity(intent);
 //                            Log.e("daole",alertLevel.getUuid().toString());
+                            } else if (BT_24_ReadUUID.toString().equals(gattCharacteristic.getUuid().toString())){
+                                BlueToothUtil.setReadGattCharacteristic(gattCharacteristic);
+                                bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+
+                                List<BluetoothGattDescriptor> descriptors = gattCharacteristic.getDescriptors();
+
+                                for (BluetoothGattDescriptor descriptor : descriptors) {
+//                                    for(BluetoothGattDescriptor descriptor : descriptorList) {
+//                                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//
+//                                        mBluetoothGatt.writeDescriptor(descriptor);
+//
+//                                    }
+                                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                    bluetoothGatt.writeDescriptor(descriptor);
+                                }
+
                             }
                         }
                     }
                 }
-
-//                enableNotification(true,gatt,alertLevel);//必须要有，否则接收不到数据
-
             }
 
             @Override
@@ -613,6 +645,9 @@ class ConnectThread extends Thread {
             @Override
             public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
                 super.onCharacteristicChanged(gatt, characteristic);
+                byte[] bytes = characteristic.getValue();
+                System.out.println("receive :" + new String(bytes));
+                ReceiveUtil.appendData(bytes);
             }
 
             @Override
