@@ -20,12 +20,20 @@ import com.example.rm.other.FineTuningControl;
 import com.example.rm.other.ImuControl;
 import com.example.rm.other.RockerControl;
 import com.example.rm.utils.BlueToothUtil;
+import com.example.rm.utils.DataTransformUtil;
+import com.example.rm.utils.ReceiveUtil;
 import com.example.rm.utils.TimeTool;
 import com.example.rm.views.RockerView;
 
 import com.example.rm.other.rmData;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class GameActivity extends AppCompatActivity {
@@ -48,6 +56,8 @@ public class GameActivity extends AppCompatActivity {
     private RockerView rockerViewRight;
 
     TextView textView;
+
+    TextView powerShow;
 
     private float power = 0;
 
@@ -108,6 +118,24 @@ public class GameActivity extends AppCompatActivity {
         }
     };
 
+    private final Handler powerHandler = new Handler() {
+        @SuppressLint("HandlerLeak")
+        public void handleMessage(Message msg) {
+            // 处理消息
+            super.handleMessage(msg);
+            switch (msg.what) {
+                case 1:
+                    DecimalFormat decimalFormat = new DecimalFormat("00.00");
+                    Bundle data = msg.getData();
+                    float power = data.getFloat("power");
+                    GameActivity.this.powerShow.setText("电量: " + decimalFormat.format(power) + "%");
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +144,7 @@ public class GameActivity extends AppCompatActivity {
         btn_reset = (Button) findViewById(R.id.btn_reset);
         btn_enable = (Button) findViewById(R.id.btn_enable);
 
+        powerShow = (TextView) findViewById(R.id.power_show);
 
         btn_imu = (Button) findViewById(R.id.btn_imu);
         btn_fineCtl = (Button) findViewById(R.id.btn_fineCtl);
@@ -277,7 +306,7 @@ public class GameActivity extends AppCompatActivity {
         };
 
         //主线程中调用：
-        mHandler.postDelayed(r, 3000);//延时2s
+        mHandler.postDelayed(r, 500);//延时500ms
 
         DecimalFormat df = new DecimalFormat("000.000");
         String buffer = "油门: " + (rmdata.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel2())) + "\n偏航: " + (rmdata.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel1())) + "\n" +
@@ -385,6 +414,84 @@ public class GameActivity extends AppCompatActivity {
                 BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
             }
         });
+
+
+        Handler powerHandler = new Handler();
+        Runnable powerRunnable = new Runnable() {
+            ArrayList<Byte> list = ReceiveUtil.getReceiveData();
+
+            private byte getCheckSum(ArrayList<Byte> list, int start, int end){
+                byte res = 0;
+                for (int i = start ; i < end ; i++){
+                    res += list.get(i);
+                }
+                return res;
+            }
+
+            private void removeItems(ArrayList<Byte> list, int num){
+                if (num > 0) {
+                    list.subList(0, num).clear();
+                }
+            }
+
+            boolean isGetData = false;
+
+            @Override
+            public void run() {
+                isGetData = false;
+                while (list.size() >= 1){
+
+                    if (list.get(0) != 0x5A){
+                        list.remove(0);
+                        break;
+                    }
+                    if (list.get(1) == 0x04 && list.size() >= 9){
+                        byte aaa = getCheckSum(list, 0, 7);
+                        if ((byte) list.get(2) == (byte) 0x04 && getCheckSum(list, 0, 7) == list.get(7) && list.get(8) == (byte) 0xA5){
+//                            ByteBuffer buffer1 = ByteBuffer.allocate(4);
+
+
+//                            buffer1.put((byte) list.get(3));
+//                            buffer1.put((byte) list.get(4));
+//                            buffer1.put((byte) list.get(5));
+//                            buffer1.put((byte) list.get(6));
+//
+//                            buffer1 = buffer1.order(ByteOrder.LITTLE_ENDIAN);
+//
+//                            buffer1.flip();
+//
+//                            System.out.println("can read : " + buffer1.remaining() + " bytes");
+
+//                            float res = buffer1.getFloat();
+
+                            float res = DataTransformUtil.getFloat(list, 3);
+
+                            Message message = GameActivity.this.powerHandler.obtainMessage();
+                            message.what = 1;
+                            Bundle data = message.getData();
+                            data.putFloat("power", res);
+                            message.setData(data);
+
+                            GameActivity.this.powerHandler.sendMessage(message);
+
+                            removeItems(list, 9);
+
+                            isGetData = true;
+                        } else {
+                            list.remove(0);
+                        }
+                    }
+                }
+
+                if (!isGetData){
+                    powerHandler.postDelayed(this, 100);
+                } else {
+                    powerHandler.postDelayed(this, 1);
+                }
+            }
+        };
+
+        powerHandler.postDelayed(powerRunnable, 500);
 
     }
 

@@ -21,5 +21,6 @@
     <string name="stop">停止</string>
     <string name="finectl">微调</string>
     <string name="imu">imu校准</string>
+    <string name="power">电量: 00.00%</string>
 
 </resources>

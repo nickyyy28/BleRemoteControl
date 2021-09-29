@@ -184,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        BlueToothUtil.startAccept(this);
+        //BlueToothUtil.startAccept(this);
 
         Log.d(TAG, "onCreate: " + adapter);
     }

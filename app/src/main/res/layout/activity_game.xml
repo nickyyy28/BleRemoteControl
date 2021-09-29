@@ -83,7 +83,24 @@
             android:layout_height="wrap_content"
             android:text="@string/imu"
             android:textSize="20sp"/>
+
+
     </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/power_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/power"
+            android:layout_alignParentBottom="true"
+            android:layout_centerInParent="true"
+            android:textColor="#F80707"
+            android:textSize="20sp" />
+    </RelativeLayout>
 
     <!--    <TextView-->
 <!--        android:id="@+id/tip_right"-->
