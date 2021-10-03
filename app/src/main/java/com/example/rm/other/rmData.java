@@ -3,6 +3,7 @@ package com.example.rm.other;
 import com.example.rm.views.RockerView;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 public class rmData {
     short channel1 = 0;
@@ -56,6 +57,7 @@ public class rmData {
 
     public byte[] getDataPack() {
         ByteBuffer buffer = ByteBuffer.allocate(8);
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
         buffer.putShort(channel1);
         buffer.putShort(channel2);
         buffer.putShort(channel3);

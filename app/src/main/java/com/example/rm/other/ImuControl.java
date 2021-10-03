@@ -2,7 +2,7 @@ package com.example.rm.other;
 
 import java.nio.ByteBuffer;
 
-public class ImuControl extends BaseData{
+public class ImuControl extends BaseData {
 
     private static final byte cmd_id = 0x03;
 
@@ -30,7 +30,7 @@ public class ImuControl extends BaseData{
 
         byte res = 0;
 
-        for (byte b : buffer.array()){
+        for (byte b : buffer.array()) {
             res += b;
         }
         return AgreeUtil.getBytes(res);

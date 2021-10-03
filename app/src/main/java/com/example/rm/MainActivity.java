@@ -192,7 +192,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        BlueToothUtil.closeBlueTooth();
+
+        try {
+            BlueToothUtil.closeAll();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         BlueToothUtil.unregisterBoardCaster(this);
     }
 }

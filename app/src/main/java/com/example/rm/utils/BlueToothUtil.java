@@ -42,11 +42,37 @@ public class BlueToothUtil {
     private static BluetoothGattCharacteristic writeGattCharacteristic = null;
     private static BluetoothGattCharacteristic notifyGattCharacteristic = null;
 
-    public enum deviceType{
+    public enum deviceType {
         DX2002,
         ATK_Blue1,
         BT_24
     }
+
+    private static deviceType type = deviceType.ATK_Blue1;
+
+    private static BluetoothGattCharacteristic configGattCharacteristic = null;
+    private static BluetoothGattCharacteristic readGattCharacteristic = null;
+
+    private static boolean connectStatus = false;
+
+    private static BluetoothManager bluetoothManager;
+
+    private static TimerTask timerTask;
+    private final static int REQUEST_ENABLE_BT = 1;
+
+    private static BluetoothSocket serverSocket;
+    private static BluetoothSocket clientSocket;
+
+    private static BluetoothGatt bluetoothGatt;
+
+    private enum socketMode {
+        SERVER,
+        CLIENT
+    }
+
+    private static socketMode mode = socketMode.CLIENT;
+
+    private static long startStamp;
 
     public static deviceType getType() {
         return type;
@@ -55,8 +81,6 @@ public class BlueToothUtil {
     public static void setType(deviceType type) {
         BlueToothUtil.type = type;
     }
-
-    private static deviceType type = deviceType.ATK_Blue1;
 
     public static BluetoothGattCharacteristic getNotifyGattCharacteristic() {
         return notifyGattCharacteristic;
@@ -74,8 +98,6 @@ public class BlueToothUtil {
         BlueToothUtil.configGattCharacteristic = configGattCharacteristic;
     }
 
-    private static BluetoothGattCharacteristic configGattCharacteristic = null;
-
     public static BluetoothGattCharacteristic getReadGattCharacteristic() {
         return readGattCharacteristic;
     }
@@ -83,8 +105,6 @@ public class BlueToothUtil {
     public static void setReadGattCharacteristic(BluetoothGattCharacteristic readGattCharacteristic) {
         BlueToothUtil.readGattCharacteristic = readGattCharacteristic;
     }
-
-    private static BluetoothGattCharacteristic readGattCharacteristic = null;
 
     public static BluetoothGattService getWriteGattService() {
         return writeGattService;
@@ -110,8 +130,6 @@ public class BlueToothUtil {
         BlueToothUtil.connectStatus = connectStatus;
     }
 
-    private static boolean connectStatus = false;
-
     public static BluetoothManager getBluetoothManager() {
         return bluetoothManager;
     }
@@ -121,7 +139,7 @@ public class BlueToothUtil {
     }
 
     public static void disConnectGatt() {
-        if (bluetoothGatt != null){
+        if (bluetoothGatt != null) {
             bluetoothGatt.disconnect();
         }
     }
@@ -129,14 +147,6 @@ public class BlueToothUtil {
     public static void clearDevices() {
         receiver.clearDevices();
     }
-
-    private static BluetoothManager bluetoothManager;
-
-    private static TimerTask timerTask;
-    private final static int REQUEST_ENABLE_BT = 1;
-
-    private static BluetoothSocket serverSocket;
-    private static BluetoothSocket clientSocket;
 
     public static BluetoothGatt getBluetoothGatt() {
         return bluetoothGatt;
@@ -146,8 +156,6 @@ public class BlueToothUtil {
         BlueToothUtil.bluetoothGatt = bluetoothGatt;
     }
 
-    private static BluetoothGatt bluetoothGatt;
-
     public static void setServerSocket(BluetoothSocket socket) {
         serverSocket = socket;
     }
@@ -155,15 +163,6 @@ public class BlueToothUtil {
     public static void setClientSocket(BluetoothSocket socket) {
         clientSocket = socket;
     }
-
-    private enum socketMode {
-        SERVER,
-        CLIENT
-    }
-
-    private static socketMode mode = socketMode.CLIENT;
-
-    private static long startStamp;
 
     public static long getStartStamp() {
         return startStamp;
@@ -292,13 +291,13 @@ public class BlueToothUtil {
         }
     }
 
-    public static void startDiscoverServices(){
-        if (!isDiscoverServices()){
+    public static void startDiscoverServices() {
+        if (!isDiscoverServices()) {
             bluetoothGatt.discoverServices();
         }
     }
 
-    public static boolean isDiscoverServices(){
+    public static boolean isDiscoverServices() {
         return writeGattCharacteristic != null && configGattCharacteristic != null && notifyGattCharacteristic != null;
     }
 
@@ -334,12 +333,12 @@ public class BlueToothUtil {
 
     }
 
-    public static boolean enableNotification(boolean isEnable){
-        if (writeGattCharacteristic == null || notifyGattCharacteristic == null || configGattCharacteristic == null){
+    public static boolean enableNotification(boolean isEnable) {
+        if (writeGattCharacteristic == null || notifyGattCharacteristic == null || configGattCharacteristic == null) {
             return false;
         }
 
-        if (!bluetoothGatt.setCharacteristicNotification(notifyGattCharacteristic, true)){
+        if (!bluetoothGatt.setCharacteristicNotification(notifyGattCharacteristic, true)) {
             return false;
         }
 
@@ -357,6 +356,23 @@ public class BlueToothUtil {
 //
 //        return bluetoothGatt.writeDescriptor(clientConfig);
         return true;
+    }
+
+    public static void closeAll() throws IOException {
+        if (serverSocket != null){
+            serverSocket.close();
+        }
+
+        if (clientSocket != null){
+            clientSocket.close();
+        }
+
+        disConnectGatt();
+
+        if (bluetoothGatt != null){
+            bluetoothGatt.close();
+        }
+
     }
 }
 
@@ -452,14 +468,18 @@ class ConnectThread extends Thread {
 
     private final static String TAG = "ConnectThread";
 
-//    private final static UUID NotifyUUID = UUID.fromString("0000ffe2-0000-1000-8000-00805f9b34fb");
-//    private final static UUID WriteUUID = UUID.fromString("0000ff02-0000-1000-8000-00805f9b34fb");
+    //    private final static UUID NotifyUUID = UUID.fromString("0000ffe2-0000-1000-8000-00805f9b34fb");
+//
     private final static UUID WriteUUID = UUID.fromString("d973f2e2-b19e-11e2-9e96-0800200c9a66");
     private final static UUID NotifyUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
     private final static UUID ServiceUUID = UUID.fromString("0000ffe0-0000-1000-8000-00805f9b34fb");
 
     private final static UUID BT_24_WriteUUID = UUID.fromString("0000ffe2-0000-1000-8000-00805f9b34fb");
     private final static UUID BT_24_ReadUUID = UUID.fromString("0000ffe1-0000-1000-8000-00805f9b34fb");
+
+    private final static UUID DX_2002_ReadUUID = UUID.fromString("0000ffe2-0000-1000-8000-00805f9b34fb");
+    private final static UUID DX_2002_WriteUUID = UUID.fromString("0000ff02-0000-1000-8000-00805f9b34fb");
+
 
     public ConnectThread(BluetoothAdapter adapter, BluetoothSocket socket, BluetoothDevice device, Activity activity) {
         this.activity = activity;
@@ -487,7 +507,6 @@ class ConnectThread extends Thread {
         */
 
         BlueToothUtil.setStartStamp(TimeTool.getTimestamp());
-
 
 
         bluetoothGatt = device.connectGatt(activity, true, new BluetoothGattCallback() {
@@ -540,15 +559,15 @@ class ConnectThread extends Thread {
                 List<BluetoothGattService> list = bluetoothGatt.getServices();
                 BlueToothUtil.setEndStamp(TimeTool.getTimestamp());
 
-                if (BlueToothUtil.getType() == BlueToothUtil.deviceType.ATK_Blue1){
-                    for (BluetoothGattService bluetoothGattService:list){
+                if (BlueToothUtil.getType() == BlueToothUtil.deviceType.ATK_Blue1) {
+                    for (BluetoothGattService bluetoothGattService : list) {
                         String str = bluetoothGattService.getUuid().toString();
 //                    Log.e("onServicesDisc中中中", " ：" + str);
                         List<BluetoothGattCharacteristic> gattCharacteristics = bluetoothGattService
                                 .getCharacteristics();
                         for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
                             System.out.println(gattCharacteristic.getUuid().toString());
-                            if(WriteUUID.toString().equals(gattCharacteristic.getUuid().toString())){
+                            if (WriteUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
 //                            linkLossService=bluetoothGattService;
                                 System.out.println("get right service");
                                 BlueToothUtil.setWriteGattService(bluetoothGattService);
@@ -561,45 +580,81 @@ class ConnectThread extends Thread {
                             }
                         }
                     }
-                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002){
-                    for (BluetoothGattService gattService : list)
-                    {
-                        Log.i(TAG, gattService.getUuid().toString());
-                        Log.i(TAG, ServiceUUID.toString());
-                        if(gattService.getUuid().toString().equalsIgnoreCase(ServiceUUID.toString()))
-                        {
-                            List<BluetoothGattCharacteristic> gattCharacteristics =
-                                    gattService.getCharacteristics();
-                            Log.i(TAG, "Count is:" + gattCharacteristics.size());
-                            for (BluetoothGattCharacteristic gattCharacteristic :
-                                    gattCharacteristics)
-                            {
-                                if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(NotifyUUID.toString()))
-                                {
-                                    Log.i(TAG, gattCharacteristic.getUuid().toString());
-                                    Log.i(TAG, NotifyUUID.toString());
-//                                    mNotifyCharacteristic = gattCharacteristic;
-//                                    setCharacteristicNotification(gattCharacteristic, true);
-//                                    broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002) {
+//                    for (BluetoothGattService gattService : list) {
+//                        Log.i(TAG, gattService.getUuid().toString());
+//                        Log.i(TAG, ServiceUUID.toString());
+//                        if (gattService.getUuid().toString().equalsIgnoreCase(ServiceUUID.toString())) {
+//                            List<BluetoothGattCharacteristic> gattCharacteristics =
+//                                    gattService.getCharacteristics();
+//                            Log.i(TAG, "Count is:" + gattCharacteristics.size());
+//                            for (BluetoothGattCharacteristic gattCharacteristic :
+//                                    gattCharacteristics) {
+//                                if (gattCharacteristic.getUuid().toString().equalsIgnoreCase(NotifyUUID.toString())) {
+//                                    Log.i(TAG, gattCharacteristic.getUuid().toString());
+//                                    Log.i(TAG, NotifyUUID.toString());
+////                                    mNotifyCharacteristic = gattCharacteristic;
+////                                    setCharacteristicNotification(gattCharacteristic, true);
+////                                    broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
+//
+//                                    BlueToothUtil.setNotifyGattCharacteristic(gattCharacteristic);
+//                                    bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+//                                    Intent intent = new Intent("com.example.rm.GAME_ACTION");
+//                                    activity.startActivity(intent);
+//
+//                                }
+//                            }
+//                        }
+//                    }
 
-                                    BlueToothUtil.setNotifyGattCharacteristic(gattCharacteristic);
-                                    bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
-                                    Intent intent = new Intent("com.example.rm.GAME_ACTION");
-                                    activity.startActivity(intent);
+                    for (BluetoothGattService bluetoothGattService : list) {
+                        String str = bluetoothGattService.getUuid().toString();
+//                    Log.e("onServicesDisc中中中", " ：" + str);
+                        List<BluetoothGattCharacteristic> gattCharacteristics = bluetoothGattService
+                                .getCharacteristics();
+                        for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+                            System.out.println(gattCharacteristic.getUuid().toString());
+                            if (DX_2002_WriteUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
+//                            linkLossService=bluetoothGattService;
+                                System.out.println("get right service");
+                                BlueToothUtil.setWriteGattService(bluetoothGattService);
+//                            alertLevel=gattCharacteristic;
+                                BlueToothUtil.setWriteGattCharacteristic(gattCharacteristic);
 
+                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
+                                activity.startActivity(intent);
+//                            Log.e("daole",alertLevel.getUuid().toString());
+                            } else if (DX_2002_ReadUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
+                                BlueToothUtil.setReadGattCharacteristic(gattCharacteristic);
+                                bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
+
+                                List<BluetoothGattDescriptor> descriptors = gattCharacteristic.getDescriptors();
+
+                                for (BluetoothGattDescriptor descriptor : descriptors) {
+//                                    for(BluetoothGattDescriptor descriptor : descriptorList) {
+//                                        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+//
+//                                        mBluetoothGatt.writeDescriptor(descriptor);
+//
+//                                    }
+                                    descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+                                    bluetoothGatt.writeDescriptor(descriptor);
                                 }
+
                             }
                         }
                     }
-                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.BT_24){
-                    for (BluetoothGattService bluetoothGattService:list){
+
+
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.BT_24) {
+                    for (BluetoothGattService bluetoothGattService : list) {
                         String str = bluetoothGattService.getUuid().toString();
 //                    Log.e("onServicesDisc中中中", " ：" + str);
                         List<BluetoothGattCharacteristic> gattCharacteristics = bluetoothGattService
                                 .getCharacteristics();
                         for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
                             System.out.println(gattCharacteristic.getUuid().toString());
-                            if(BT_24_WriteUUID.toString().equals(gattCharacteristic.getUuid().toString())){
+                            if (BT_24_WriteUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
 //                            linkLossService=bluetoothGattService;
                                 System.out.println("get right service");
                                 BlueToothUtil.setWriteGattService(bluetoothGattService);
@@ -609,7 +664,7 @@ class ConnectThread extends Thread {
                                 Intent intent = new Intent("com.example.rm.GAME_ACTION");
                                 activity.startActivity(intent);
 //                            Log.e("daole",alertLevel.getUuid().toString());
-                            } else if (BT_24_ReadUUID.toString().equals(gattCharacteristic.getUuid().toString())){
+                            } else if (BT_24_ReadUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
                                 BlueToothUtil.setReadGattCharacteristic(gattCharacteristic);
                                 bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
 

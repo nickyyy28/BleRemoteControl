@@ -18,6 +18,7 @@ import com.example.rm.other.DisableControl;
 import com.example.rm.other.EnableControl;
 import com.example.rm.other.FineTuningControl;
 import com.example.rm.other.ImuControl;
+import com.example.rm.other.PowerControl;
 import com.example.rm.other.RockerControl;
 import com.example.rm.utils.BlueToothUtil;
 import com.example.rm.utils.DataTransformUtil;
@@ -29,6 +30,7 @@ import com.example.rm.other.rmData;
 
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -45,6 +47,7 @@ public class GameActivity extends AppCompatActivity {
     public EnableControl enableControl = new EnableControl();
     public FineTuningControl fineTuningControl = new FineTuningControl(rmdata);
     public ImuControl imuControl = new ImuControl();
+    public PowerControl powerControl = new PowerControl();
 
     public float distance_left;
     public float angle_left;
@@ -74,7 +77,7 @@ public class GameActivity extends AppCompatActivity {
     Button btn_imu;
     Button btn_fineCtl;
 
-    private enum ControlState{
+    private enum ControlState {
         Normal,     //普通
         FineCtl,    //微调
         Stop
@@ -257,22 +260,22 @@ public class GameActivity extends AppCompatActivity {
 //                    GameActivity.this.distance_left = 0;
 //                }
 
-                if (GameActivity.this.rockerViewRight.getState() == RockerView.TOUCH_STATE.UNTOUCHED){
+                if (GameActivity.this.rockerViewRight.getState() == RockerView.TOUCH_STATE.UNTOUCHED) {
                     GameActivity.this.angle_right = 0;
                     GameActivity.this.distance_right = 0;
                 }
 
                 byte[] arr = null;
 
-                if (GameActivity.this.state == ControlState.Normal){
+                if (GameActivity.this.state == ControlState.Normal) {
                     GameActivity.this.rmdata.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right, false);
                     arr = GameActivity.this.data.getPack();
-                } else if (GameActivity.this.state == ControlState.FineCtl){
+                } else if (GameActivity.this.state == ControlState.FineCtl) {
                     GameActivity.this.rmdata.updateChannels(GameActivity.this.distance_left, GameActivity.this.angle_left, GameActivity.this.distance_right, GameActivity.this.angle_right, true);
                     arr = GameActivity.this.fineTuningControl.getPack();
                 }
 
-                if (arr != null){
+                if (arr != null) {
                     System.out.println("arr" + Arrays.toString(arr));
                 }
 
@@ -332,11 +335,11 @@ public class GameActivity extends AppCompatActivity {
 //                if (!isDiscover){
 //                    checkHandler.postDelayed(this, 2000);
 //                }
-                if (BlueToothUtil.getType() == BlueToothUtil.deviceType.BT_24){
+                if (BlueToothUtil.getType() == BlueToothUtil.deviceType.BT_24) {
 
-                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.ATK_Blue1){
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.ATK_Blue1) {
 
-                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002){
+                } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002) {
 
                 }
 
@@ -361,7 +364,7 @@ public class GameActivity extends AppCompatActivity {
         btn_enable.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!GameActivity.this.isEnable){
+                if (!GameActivity.this.isEnable) {
                     GameActivity.this.isEnable = true;
                     GameActivity.this.btn_enable.setText(R.string.stop);
 
@@ -392,7 +395,7 @@ public class GameActivity extends AppCompatActivity {
         btn_fineCtl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!GameActivity.this.isFine){
+                if (!GameActivity.this.isFine) {
                     GameActivity.this.isFine = true;
                     setButtonGreen(GameActivity.this.btn_fineCtl);
                     GameActivity.this.state = ControlState.FineCtl;
@@ -420,15 +423,15 @@ public class GameActivity extends AppCompatActivity {
         Runnable powerRunnable = new Runnable() {
             ArrayList<Byte> list = ReceiveUtil.getReceiveData();
 
-            private byte getCheckSum(ArrayList<Byte> list, int start, int end){
+            private byte getCheckSum(ArrayList<Byte> list, int start, int end) {
                 byte res = 0;
-                for (int i = start ; i < end ; i++){
+                for (int i = start; i < end; i++) {
                     res += list.get(i);
                 }
                 return res;
             }
 
-            private void removeItems(ArrayList<Byte> list, int num){
+            private void removeItems(ArrayList<Byte> list, int num) {
                 if (num > 0) {
                     list.subList(0, num).clear();
                 }
@@ -439,15 +442,15 @@ public class GameActivity extends AppCompatActivity {
             @Override
             public void run() {
                 isGetData = false;
-                while (list.size() >= 1){
+                while (list.size() >= 1) {
 
-                    if (list.get(0) != 0x5A){
+                    if (list.get(0) != 0x5A) {
                         list.remove(0);
                         break;
                     }
-                    if (list.get(1) == 0x04 && list.size() >= 9){
+                    if (list.get(1) == 0x04 && list.size() >= 9) {
                         byte aaa = getCheckSum(list, 0, 7);
-                        if ((byte) list.get(2) == (byte) 0x04 && getCheckSum(list, 0, 7) == list.get(7) && list.get(8) == (byte) 0xA5){
+                        if ((byte) list.get(2) == (byte) 0x04 && getCheckSum(list, 0, 7) == list.get(7) && list.get(8) == (byte) 0xA5) {
 //                            ByteBuffer buffer1 = ByteBuffer.allocate(4);
 
 
@@ -483,7 +486,7 @@ public class GameActivity extends AppCompatActivity {
                     }
                 }
 
-                if (!isGetData){
+                if (!isGetData) {
                     powerHandler.postDelayed(this, 100);
                 } else {
                     powerHandler.postDelayed(this, 1);
@@ -493,34 +496,53 @@ public class GameActivity extends AppCompatActivity {
 
         powerHandler.postDelayed(powerRunnable, 500);
 
+        Handler getPower = new Handler();
+
+        Runnable getPowerRunnable = new Runnable() {
+            @Override
+            public void run() {
+                byte[] bytes = GameActivity.this.powerControl.getPack();
+                BlueToothUtil.getWriteGattCharacteristic().setValue(bytes);
+                BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
+
+                getPower.postDelayed(this, 500);
+            }
+        };
+
+        getPower.postDelayed(getPowerRunnable, 500);
+
     }
 
-    private void setButtonColor(Button button, int r, int g, int b){
+    private void setButtonColor(Button button, int r, int g, int b) {
         button.setBackgroundColor(Color.argb(1, r, g, b));
     }
 
-    private void setButtonRed(Button button){
+    private void setButtonRed(Button button) {
         button.setBackgroundColor(Color.RED);
     }
 
-    private void setButtonBlack(Button button){
+    private void setButtonBlack(Button button) {
         button.setBackgroundColor(Color.BLACK);
     }
 
-    private void setButtonBlue(Button button){
+    private void setButtonBlue(Button button) {
         button.setBackgroundColor(Color.BLUE);
     }
 
-    private void setButtonGreen(Button button){
+    private void setButtonGreen(Button button) {
         button.setBackgroundColor(Color.GREEN);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        BlueToothUtil.disConnectGatt();
+
+        try {
+            BlueToothUtil.closeAll();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
-
 
 }
