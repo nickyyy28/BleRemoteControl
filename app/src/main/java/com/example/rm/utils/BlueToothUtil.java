@@ -126,6 +126,10 @@ public class BlueToothUtil {
         return connectStatus;
     }
 
+    public static boolean getConnectStatus(){
+        return connectStatus;
+    }
+
     public static void setConnectStatus(boolean connectStatus) {
         BlueToothUtil.connectStatus = connectStatus;
     }
@@ -286,7 +290,7 @@ public class BlueToothUtil {
     public static void startDiscovery(Activity activity) {
         if (!adapter.isDiscovering()) {
             if (!adapter.startDiscovery()) {
-                Toast.makeText(activity, "SCAN FAILED", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, "开启扫描失败, 请检查蓝牙和GPS是否开启", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -325,7 +329,7 @@ public class BlueToothUtil {
 
         openBlueTooth(activity);
 
-        setBlueToothDiscoverable(activity);
+//        setBlueToothDiscoverable(activity);
 
         startDiscovery(activity);
 
@@ -372,6 +376,8 @@ public class BlueToothUtil {
         if (bluetoothGatt != null){
             bluetoothGatt.close();
         }
+
+        setConnectStatus(false);
 
     }
 }
@@ -538,7 +544,7 @@ class ConnectThread extends Thread {
                 if (BluetoothGatt.STATE_CONNECTED == newState) {
                     Log.e("Bluetooth", "连接成功:");
                     System.out.println("bluetooth connect");
-                    BlueToothUtil.setConnectStatus(true);
+
                     gatt.discoverServices();//必须有，可以让onServicesDiscovered显示所有Services
                     //tx_display.append("连接成功");
 //                    Toast.makeText(mContext, "连接成功", Toast.LENGTH_SHORT).show();
@@ -574,38 +580,17 @@ class ConnectThread extends Thread {
 //                            alertLevel=gattCharacteristic;
                                 BlueToothUtil.setWriteGattCharacteristic(gattCharacteristic);
 
-                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
-                                activity.startActivity(intent);
+                                //更新蓝牙连接状态
+                                BlueToothUtil.setConnectStatus(true);
+
+
+//                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
+//                                activity.startActivity(intent);
 //                            Log.e("daole",alertLevel.getUuid().toString());
                             }
                         }
                     }
                 } else if (BlueToothUtil.getType() == BlueToothUtil.deviceType.DX2002) {
-//                    for (BluetoothGattService gattService : list) {
-//                        Log.i(TAG, gattService.getUuid().toString());
-//                        Log.i(TAG, ServiceUUID.toString());
-//                        if (gattService.getUuid().toString().equalsIgnoreCase(ServiceUUID.toString())) {
-//                            List<BluetoothGattCharacteristic> gattCharacteristics =
-//                                    gattService.getCharacteristics();
-//                            Log.i(TAG, "Count is:" + gattCharacteristics.size());
-//                            for (BluetoothGattCharacteristic gattCharacteristic :
-//                                    gattCharacteristics) {
-//                                if (gattCharacteristic.getUuid().toString().equalsIgnoreCase(NotifyUUID.toString())) {
-//                                    Log.i(TAG, gattCharacteristic.getUuid().toString());
-//                                    Log.i(TAG, NotifyUUID.toString());
-////                                    mNotifyCharacteristic = gattCharacteristic;
-////                                    setCharacteristicNotification(gattCharacteristic, true);
-////                                    broadcastUpdate(ACTION_GATT_SERVICES_DISCOVERED);
-//
-//                                    BlueToothUtil.setNotifyGattCharacteristic(gattCharacteristic);
-//                                    bluetoothGatt.setCharacteristicNotification(gattCharacteristic, true);
-//                                    Intent intent = new Intent("com.example.rm.GAME_ACTION");
-//                                    activity.startActivity(intent);
-//
-//                                }
-//                            }
-//                        }
-//                    }
 
                     for (BluetoothGattService bluetoothGattService : list) {
                         String str = bluetoothGattService.getUuid().toString();
@@ -621,8 +606,10 @@ class ConnectThread extends Thread {
 //                            alertLevel=gattCharacteristic;
                                 BlueToothUtil.setWriteGattCharacteristic(gattCharacteristic);
 
-                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
-                                activity.startActivity(intent);
+                                BlueToothUtil.setConnectStatus(true);
+
+//                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
+//                                activity.startActivity(intent);
 //                            Log.e("daole",alertLevel.getUuid().toString());
                             } else if (DX_2002_ReadUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
                                 BlueToothUtil.setReadGattCharacteristic(gattCharacteristic);
@@ -661,8 +648,10 @@ class ConnectThread extends Thread {
 //                            alertLevel=gattCharacteristic;
                                 BlueToothUtil.setWriteGattCharacteristic(gattCharacteristic);
 
-                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
-                                activity.startActivity(intent);
+                                BlueToothUtil.setConnectStatus(true);
+
+//                                Intent intent = new Intent("com.example.rm.GAME_ACTION");
+//                                activity.startActivity(intent);
 //                            Log.e("daole",alertLevel.getUuid().toString());
                             } else if (BT_24_ReadUUID.toString().equals(gattCharacteristic.getUuid().toString())) {
                                 BlueToothUtil.setReadGattCharacteristic(gattCharacteristic);

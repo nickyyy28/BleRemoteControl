@@ -10,7 +10,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -19,6 +21,16 @@
         android:roundIcon="@mipmap/bluetooth_control"
         android:supportsRtl="true"
         android:theme="@style/Theme.RM">
+        <activity
+            android:name=".PIDConfigureActivity"
+            android:exported="true" >
+
+            <intent-filter>
+                <action android:name="android.intent.action.PID_ACTION"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+            </intent-filter>
+
+        </activity>
         <activity
             android:name=".MainActivity"
             android:exported="true">

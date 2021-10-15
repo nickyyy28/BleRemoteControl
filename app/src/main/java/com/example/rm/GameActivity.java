@@ -35,6 +35,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 import java.text.DecimalFormat;
+import java.text.Format;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -77,6 +78,8 @@ public class GameActivity extends AppCompatActivity {
     Button btn_imu;
     Button btn_fineCtl;
 
+    private boolean isRunning = false;
+
     private enum ControlState {
         Normal,     //普通
         FineCtl,    //微调
@@ -110,7 +113,7 @@ public class GameActivity extends AppCompatActivity {
             super.handleMessage(msg);
             switch (msg.what) {
                 case 1:
-                    DecimalFormat df = new DecimalFormat("000.000");
+                    DecimalFormat df = new DecimalFormat("0000.0");
                     String buffer = "油门: " + (rmdata.getChannel2() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel2())) + "\n偏航: " + (rmdata.getChannel1() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel1())) + "\n" +
                             "翻滚: " + (rmdata.getChannel3() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel3())) + "\n俯仰: " + (rmdata.getChannel4() >= 0 ? "+" : "-") + df.format(Math.abs(rmdata.getChannel4()));
                     textView.setText(buffer);
@@ -144,10 +147,12 @@ public class GameActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        isRunning = true;
+
         btn_reset = (Button) findViewById(R.id.btn_reset);
         btn_enable = (Button) findViewById(R.id.btn_enable);
 
-        powerShow = (TextView) findViewById(R.id.power_show);
+//        powerShow = (TextView) findViewById(R.id.power_show);
 
         btn_imu = (Button) findViewById(R.id.btn_imu);
         btn_fineCtl = (Button) findViewById(R.id.btn_fineCtl);
@@ -245,21 +250,6 @@ public class GameActivity extends AppCompatActivity {
 
                 System.out.println("err = " + (BlueToothUtil.getEndStamp() - BlueToothUtil.getStartStamp()));
 
-//                if (TimeTool.getTimestamp() - GameActivity.this.leftTimeStamp > 500) {
-//                    GameActivity.this.angle_left = 0;
-//                    GameActivity.this.distance_left = 0;
-//                }
-//
-//                if (TimeTool.getTimestamp() - GameActivity.this.rightTimeStamp > 500) {
-//                    GameActivity.this.angle_right = 0;
-//                    GameActivity.this.distance_right = 0;
-//                }
-
-//                if (GameActivity.this.rockerViewLeft.getState() == RockerView.TOUCH_STATE.UNTOUCHED){
-//                    GameActivity.this.angle_left = 0;
-//                    GameActivity.this.distance_left = 0;
-//                }
-
                 if (GameActivity.this.rockerViewRight.getState() == RockerView.TOUCH_STATE.UNTOUCHED) {
                     GameActivity.this.angle_right = 0;
                     GameActivity.this.distance_right = 0;
@@ -301,7 +291,7 @@ public class GameActivity extends AppCompatActivity {
                 Log.i(TAG, "send " + arr.length + "byte");
 
                 //每隔50ms循环执行run方法
-                if (isContinue) {
+                if (isContinue && isRunning) {
                     mHandler.postDelayed(this, 20);
                 }
 
@@ -346,7 +336,7 @@ public class GameActivity extends AppCompatActivity {
             }
         };
 
-        checkHandler.postDelayed(runnable, 2000);
+//        checkHandler.postDelayed(runnable, 2000);
 
         btn_enable.setText(R.string.start);
         setButtonRed(btn_enable);
@@ -486,15 +476,18 @@ public class GameActivity extends AppCompatActivity {
                     }
                 }
 
-                if (!isGetData) {
-                    powerHandler.postDelayed(this, 100);
-                } else {
-                    powerHandler.postDelayed(this, 1);
+                if (isRunning){
+                    if (!isGetData) {
+                        powerHandler.postDelayed(this, 100);
+                    } else {
+                        powerHandler.postDelayed(this, 1);
+                    }
                 }
             }
         };
 
-        powerHandler.postDelayed(powerRunnable, 500);
+        //解析电量数据线程
+//        powerHandler.postDelayed(powerRunnable, 500);
 
         Handler getPower = new Handler();
 
@@ -505,11 +498,14 @@ public class GameActivity extends AppCompatActivity {
                 BlueToothUtil.getWriteGattCharacteristic().setValue(bytes);
                 BlueToothUtil.getBluetoothGatt().writeCharacteristic(BlueToothUtil.getWriteGattCharacteristic());
 
-                getPower.postDelayed(this, 500);
+                if (isRunning){
+                    getPower.postDelayed(this, 500);
+                }
             }
         };
 
-        getPower.postDelayed(getPowerRunnable, 500);
+        //请求电量数据线程
+//        getPower.postDelayed(getPowerRunnable, 500);
 
     }
 
@@ -536,6 +532,8 @@ public class GameActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+
+        isRunning = false;
 
         try {
             BlueToothUtil.closeAll();

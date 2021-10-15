@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#2196F3">
+
+    <TextView android:id="@+id/data_view"
+        android:layout_height="wrap_content"
+        android:text="@string/connectSucceeded"
+        android:layout_width="fill_parent"/>
+
+    <LinearLayout android:id="@+id/LinearLayout01"
+        android:layout_marginTop="50dp"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="horizontal"
+        android:layout_gravity="bottom">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/btn_goto_control"
+                android:text="@string/goto_control">
+            </Button>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="right"
+            tools:ignore="RtlHardcoded">
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/goto_pid_configure"
+                android:id="@+id/btn_goto_pid_configure">
+            </Button>
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+</LinearLayout>

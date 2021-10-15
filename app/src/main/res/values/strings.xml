@@ -22,5 +22,26 @@
     <string name="finectl">微调</string>
     <string name="imu">imu校准</string>
     <string name="power">电量: 00.00%</string>
+    <string name="input_Kp">请输入Kp</string>
+    <string name="input_Ki">请输入Ki</string>
+    <string name="input_Kd">请输入Kd</string>
+    <string name="input_iLimit">请输入iLimit</string>
+    <string name="input_iRange">请输入iRange</string>
 
+    <string name="yaw_angular_velocity_pid">偏航角\n角速度环</string>
+    <string name="yaw_angular_pid">偏航角\n角度环</string>
+    <string name="pitch_angular_velocity_pid">俯仰角\n角速度环</string>
+    <string name="pitch_angular_pid">俯仰角\n角度环</string>
+    <string name="roll_angular_velocity_pid">翻滚角\n角速度环</string>
+    <string name="roll_angular_pid">翻滚角\n角度环</string>
+
+    <string name="set">设置</string>
+    <string name="kp">Kp:</string>
+    <string name="ki">Ki:</string>
+    <string name="kd">Kd:</string>
+    <string name="ilimit">iLimit</string>
+    <string name="irange">iRange</string>
+    <string name="connectSucceeded">连接成功!</string>
+    <string name="goto_control">蓝牙遥控</string>
+    <string name="goto_pid_configure">PID设置</string>
 </resources>

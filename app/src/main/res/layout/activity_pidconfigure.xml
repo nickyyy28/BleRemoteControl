@@ -1,0 +1,989 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".PIDConfigureActivity">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:ignore="MissingConstraints">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints">
+
+            <TableLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TableRow
+                    android:background="#ED7067">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        tools:ignore="MissingConstraints">
+
+                        <LinearLayout
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/yaw_angular_velocity_pid"
+                                android:textSize="30sp"
+                                android:textColor="#00FFB7"
+                                android:textAlignment="center"/>
+
+                            <Button
+                                android:id="@+id/btn_yaw_av_pid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/set"
+                                android:layout_gravity="center"/>
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp">
+
+                            <TableRow>
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kp"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_av_Kp"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kp"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ki"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_av_Ki"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Ki"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kd"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_av_Kd"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kd"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ilimit"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_av_iLimit"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iLimit"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/irange"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_av_iRange"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iRange"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+                </TableRow>
+
+                <View android:layout_height="2dp"
+                    android:background="#ff0000"/>
+
+                <TableRow
+                    android:background="#ED7067">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        tools:ignore="MissingConstraints">
+
+                        <LinearLayout
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/yaw_angular_pid"
+                                android:textSize="30sp"
+                                android:textColor="#00FFB7"
+                                android:textAlignment="center"/>
+
+                            <Button
+                                android:id="@+id/btn_yaw_a_pid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/set"
+                                android:layout_gravity="center"/>
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp">
+
+                            <TableRow>
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kp"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_a_Kp"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kp"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ki"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_a_Ki"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Ki"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kd"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_a_Kd"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kd"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ilimit"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_a_iLimit"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iLimit"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/irange"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_yaw_a_iRange"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iRange"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+                </TableRow>
+
+                <View
+                    android:layout_height="5dp"
+                    android:background="#000000" />
+
+                <TableRow
+                    android:background="#2196F3">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        tools:ignore="MissingConstraints">
+
+                        <LinearLayout
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/pitch_angular_velocity_pid"
+                                android:textSize="30sp"
+                                android:textColor="#00FFB7"
+                                android:textAlignment="center"/>
+
+                            <Button
+                                android:id="@+id/btn_pitch_av_pid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/set"
+                                android:layout_gravity="center"/>
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp">
+
+                            <TableRow>
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kp"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_av_Kp"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kp"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ki"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_av_Ki"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Ki"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kd"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_av_Kd"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kd"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ilimit"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_av_iLimit"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iLimit"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/irange"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_av_iRange"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iRange"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+                </TableRow>
+
+                <View android:layout_height="2dp"
+                    android:background="#ff0000"/>
+
+                <TableRow
+                    android:background="#2196F3">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        tools:ignore="MissingConstraints">
+
+                        <LinearLayout
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/pitch_angular_pid"
+                                android:textAlignment="center"
+                                android:textColor="#00FFB7"
+                                android:textSize="30sp" />
+
+                            <Button
+                                android:id="@+id/btn_pitch_a_pid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/set" />
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp">
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/kp"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_a_Kp"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_Kp"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/ki"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_a_Ki"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_Ki"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/kd"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_a_Kd"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_Kd"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/ilimit"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_a_iLimit"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_iLimit"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/irange"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_pitch_a_iRange"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_iRange"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+                </TableRow>
+
+                <View
+                    android:layout_height="5dp"
+                    android:background="#000000" />
+
+                <TableRow
+                    android:background="#C5B52C">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        tools:ignore="MissingConstraints">
+
+                        <LinearLayout
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_gravity="center">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/roll_angular_velocity_pid"
+                                android:textSize="30sp"
+                                android:textColor="#00FFB7"
+                                android:textAlignment="center"/>
+
+                            <Button
+                                android:id="@+id/btn_roll_av_pid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/set"
+                                android:layout_gravity="center"/>
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp">
+
+                            <TableRow>
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kp"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_av_Kp"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kp"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ki"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_av_Ki"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Ki"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/kd"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_av_Kd"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_Kd"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ilimit"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_av_iLimit"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iLimit"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/irange"
+                                    android:textSize="25sp"
+                                    android:textColor="#0000FF"
+                                    android:layout_gravity="center"/>
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_av_iRange"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:hint="@string/input_iRange"
+                                    android:inputType="number"
+                                    android:minLines="1"
+                                    android:maxLines="1"
+                                    android:singleLine="true"
+                                    android:autofillHints="0.0" />
+
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+                </TableRow>
+
+                <View android:layout_height="2dp"
+                    android:background="#ff0000"/>
+
+                <TableRow
+                    android:background="#C5B52C">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        tools:ignore="MissingConstraints">
+
+                        <LinearLayout
+                            android:layout_width="150dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/roll_angular_pid"
+                                android:textAlignment="center"
+                                android:textColor="#00FFB7"
+                                android:textSize="30sp" />
+
+                            <Button
+                                android:id="@+id/btn_roll_a_pid"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="@string/set" />
+
+                        </LinearLayout>
+
+                        <TableLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp">
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/kp"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_a_Kp"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_Kp"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/ki"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_a_Ki"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_Ki"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/kd"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_a_Kd"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_Kd"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/ilimit"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_a_iLimit"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_iLimit"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                            <TableRow>
+
+                                <TextView
+                                    android:layout_width="80dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center"
+                                    android:text="@string/irange"
+                                    android:textColor="#0000FF"
+                                    android:textSize="25sp" />
+
+                                <EditText
+                                    android:id="@+id/ipt_roll_a_iRange"
+                                    android:layout_width="120dp"
+                                    android:layout_height="wrap_content"
+                                    android:autofillHints="0.0"
+                                    android:hint="@string/input_iRange"
+                                    android:inputType="number"
+                                    android:maxLines="1"
+                                    android:minLines="1"
+                                    android:singleLine="true" />
+
+                            </TableRow>
+
+                        </TableLayout>
+
+                    </LinearLayout>
+                </TableRow>
+
+            </TableLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

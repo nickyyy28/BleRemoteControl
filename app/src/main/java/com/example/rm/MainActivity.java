@@ -4,18 +4,25 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -29,6 +36,12 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int MY_PERMISSION_REQUEST_CONSTANT = 101;
+
+    private boolean isRunning = false;
+    private boolean dialogIsShow = false;
+
+    private Handler checkConnect;
+    private Runnable runnable;
 
     ArrayAdapter<String> adapter;
 //    private final String[] data = {"Apple", "Banana", "Cheery", "Orange", "WaterMelon", "Lemon", "Pineapple"};
@@ -54,10 +67,13 @@ public class MainActivity extends AppCompatActivity {
 //        Toast.makeText(this, "checkBTPermission: Finish", Toast.LENGTH_SHORT).show();
     }
 
+    @SuppressLint("ResourceType")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        isRunning = true;
 
         BlueToothUtil.UtilInit(this);
 
@@ -70,6 +86,17 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
 
         Toast.makeText(this, "SDK Version " + Build.VERSION.SDK_INT, Toast.LENGTH_SHORT).show();
+
+//        Button btn_pid = (Button) findViewById(R.id.btn_setPid);
+//        btn_pid.setOnClickListener(view -> {
+//            Intent intent = new Intent("android.intent.action.PID_ACTION");
+//            startActivity(intent);
+//        });
+//
+//        Button btn_dialog = (Button) findViewById(R.id.btn_dialog);
+//        btn_dialog.setOnClickListener(view -> {
+//            showPopupWindow(MainActivity.this.getApplicationContext(), findViewById(R.id.btn_dialog));
+//        });
 
         btn_1.setOnClickListener(view -> {
 
@@ -154,6 +181,12 @@ public class MainActivity extends AppCompatActivity {
                 String name = adapter.getItem(i);
 
                 try {
+                    BlueToothUtil.closeAll();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                try {
                     BlueToothUtil.clientConnect(BlueToothUtil.getDeviceByName(name.split("\n")[0]), MainActivity.this);
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -187,6 +220,26 @@ public class MainActivity extends AppCompatActivity {
         //BlueToothUtil.startAccept(this);
 
         Log.d(TAG, "onCreate: " + adapter);
+
+        checkConnect = new Handler();
+
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (BlueToothUtil.getConnectStatus() && !dialogIsShow && isRunning){
+                    showPopupWindow(getApplicationContext(), findViewById(R.id.scan_device));
+                    dialogIsShow = true;
+                    isRunning = false;
+                }
+
+                if (isRunning){
+                    checkConnect.postDelayed(this, 100);
+                }
+            }
+        };
+
+//        checkConnect.postDelayed(runnable, 50);
+
     }
 
     @Override
@@ -199,6 +252,63 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        isRunning = false;
+
         BlueToothUtil.unregisterBoardCaster(this);
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        isRunning = false;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        isRunning = true;
+        checkConnect.postDelayed(runnable, 2000);
+
+    }
+
+    private void showPopupWindow(Context context, View parent) {
+        //LayoutInflater的作用是用来动态加载Layout文件的
+        LayoutInflater inflater = LayoutInflater.from(context);
+        @SuppressLint("InflateParams") final View popupView = inflater.inflate( R.layout.popup_window, null);//动态加载Layout文件
+        final PopupWindow pWindow = new PopupWindow(popupView,600,350,true);//需要填写宽高，否则显示不了
+        final Button button=(Button)popupView.findViewById(R.id.btn_goto_control);//加载之后可以找到其中的控件了
+        button.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                isRunning = false;
+                dialogIsShow = false;
+                pWindow.dismiss();
+                Intent intent = new Intent("com.example.rm.GAME_ACTION");
+                startActivity(intent);
+            }
+        });
+        //Cancel按钮及其处理事件
+        Button btnCancel=(Button)popupView.findViewById(R.id.btn_goto_pid_configure);
+        btnCancel.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                isRunning = false;
+                dialogIsShow = false;
+                pWindow.dismiss();//关闭
+                Intent intent = new Intent("android.intent.action.PID_ACTION");
+                startActivity(intent);
+            }
+        });
+        //显示popupWindow对话框
+
+        pWindow.setOutsideTouchable(false);
+
+        if (parent == null){
+            Toast.makeText(context, "the parent is null", Toast.LENGTH_SHORT).show();
+        }
+
+        pWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
+    }
+
 }

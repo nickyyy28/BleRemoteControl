@@ -30,7 +30,7 @@ public class FineTuningControl extends BaseData {
     public byte[] getData() {
         ByteBuffer buffer = ByteBuffer.allocate(6);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        buffer.putShort(data.getChannel2());
+        buffer.putShort(data.getChannel1());
         buffer.putShort(data.getChannel3());
         buffer.putShort(data.getChannel4());
         return buffer.array();
