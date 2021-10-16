@@ -17,6 +17,7 @@
     <string name="device3">BT24</string>
     <string name="device_type">设备类型</string>
     <string name="reset">Reset</string>
+    <string name="preservation">保留位</string>
     <string name="start">启动</string>
     <string name="stop">停止</string>
     <string name="finectl">微调</string>

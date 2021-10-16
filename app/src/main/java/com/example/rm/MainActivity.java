@@ -44,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
     private Runnable runnable;
 
     ArrayAdapter<String> adapter;
+
+    private boolean dialogThreadIsContinue = true;
+
 //    private final String[] data = {"Apple", "Banana", "Cheery", "Orange", "WaterMelon", "Lemon", "Pineapple"};
 
     private void checkBTPermission() {
@@ -100,25 +103,17 @@ public class MainActivity extends AppCompatActivity {
 
         btn_1.setOnClickListener(view -> {
 
+            //关闭所有Gatt连接
+            try {
+                BlueToothUtil.closeAll();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-//            Toast.makeText(this, "start scan device", Toast.LENGTH_SHORT).show();
-//            BlueToothUtil.openBlueTooth(this);
-
-            //scan device
-//                if (!isDiscover) {
-//                    BlueToothUtil.startDiscovery();
-//                    isDiscover = true;
-//                    TimerTask timerTask = new TimerTask() {
-//                        @Override
-//                        public void run() {
-//                            isDiscover = false;
-//                            Toast.makeText(MainActivity.this, "stop scan", Toast.LENGTH_SHORT).show();
-//                        }
-//                    };
-//                    new Timer().schedule(timerTask, 12 * 1000);
-//                }
+            //清除所有设备列表
             BlueToothUtil.clearDevices();
 
+            //检查是否获得权限
             checkBTPermission();
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
@@ -157,13 +152,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            //初始化蓝牙
             BlueToothUtil.bluetoothInit(this);
 
+            //清除适配器列表
             adapter.clear();
+
+            //更新列表
             adapter.notifyDataSetChanged();
 
         });
 
+        //检查SDK版本
         if (Build.VERSION.SDK_INT >= 6.0) {
             ActivityCompat.requestPermissions(this, new String[]{
                             Manifest.permission.ACCESS_FINE_LOCATION},
@@ -175,16 +175,25 @@ public class MainActivity extends AppCompatActivity {
 
         BlueToothUtil.setAdapter(adapter);
 
+        //设置列表某一项的点击事件
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String name = adapter.getItem(i);
+
+                dialogIsShow = false;
+
+                if (!dialogThreadIsContinue){
+                    restartThread();
+                }
 
                 try {
                     BlueToothUtil.closeAll();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+
+
 
                 try {
                     BlueToothUtil.clientConnect(BlueToothUtil.getDeviceByName(name.split("\n")[0]), MainActivity.this);
@@ -195,6 +204,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        //设备下拉框的选择事件
         Spinner s = (Spinner) findViewById(R.id.device_type);
         s.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -222,17 +232,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate: " + adapter);
 
         checkConnect = new Handler();
-
         runnable = new Runnable() {
+
             @Override
             public void run() {
+
                 if (BlueToothUtil.getConnectStatus() && !dialogIsShow && isRunning){
                     showPopupWindow(getApplicationContext(), findViewById(R.id.scan_device));
                     dialogIsShow = true;
-                    isRunning = false;
+                    dialogThreadIsContinue = false;
                 }
 
-                if (isRunning){
+                if (isRunning && dialogThreadIsContinue){
                     checkConnect.postDelayed(this, 100);
                 }
             }
@@ -240,6 +251,15 @@ public class MainActivity extends AppCompatActivity {
 
 //        checkConnect.postDelayed(runnable, 50);
 
+    }
+
+    public void restartThread(){
+        dialogThreadIsContinue = true;
+        checkConnect.postDelayed(runnable, 100);
+    }
+
+    public boolean isDialogThreadIsContinue() {
+        return dialogThreadIsContinue;
     }
 
     @Override
@@ -309,6 +329,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         pWindow.showAtLocation(parent, Gravity.CENTER, 0, 0);
+    }
+
+    static class WindowRunnable implements Runnable{
+        @Override
+        public void run() {
+
+        }
     }
 
 }

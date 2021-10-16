@@ -441,21 +441,6 @@ public class GameActivity extends AppCompatActivity {
                     if (list.get(1) == 0x04 && list.size() >= 9) {
                         byte aaa = getCheckSum(list, 0, 7);
                         if ((byte) list.get(2) == (byte) 0x04 && getCheckSum(list, 0, 7) == list.get(7) && list.get(8) == (byte) 0xA5) {
-//                            ByteBuffer buffer1 = ByteBuffer.allocate(4);
-
-
-//                            buffer1.put((byte) list.get(3));
-//                            buffer1.put((byte) list.get(4));
-//                            buffer1.put((byte) list.get(5));
-//                            buffer1.put((byte) list.get(6));
-//
-//                            buffer1 = buffer1.order(ByteOrder.LITTLE_ENDIAN);
-//
-//                            buffer1.flip();
-//
-//                            System.out.println("can read : " + buffer1.remaining() + " bytes");
-
-//                            float res = buffer1.getFloat();
 
                             float res = DataTransformUtil.getFloat(list, 3);
 
